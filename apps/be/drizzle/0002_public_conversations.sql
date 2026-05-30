@@ -1,0 +1,1 @@
+ALTER TABLE "conversations" ADD COLUMN "isPublic" boolean NOT NULL DEFAULT false;--> statement-breakpoint

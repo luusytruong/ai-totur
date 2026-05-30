@@ -1,0 +1,21 @@
+{
+  "name": "ai-totur",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently --kill-others -n \"TP,BE,FE,DB\" -c \"blue,magenta,cyan,green\" \"pnpm -F @workspace/types dev\" \"pnpm -F be dev\" \"pnpm -F fe dev\" \"pnpm -F be db:studio\"",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "format": "pnpm -r format",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "packageManager": "pnpm@9.15.9",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "pnpm": {
+    "overrides": {
+      "esbuild@<=0.24.2": ">=0.25.0",
+      "next@>=16.0.0-beta.0 <16.2.3": ">=16.2.3"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+kill -9 $(lsof -ti :3000)
+kill -9 $(lsof -ti :3001)
+
+clear
+printf "\e[3J"
+
+pnpm -r exec rm -rf .next
+
+docker stop $(docker ps -q)
+docker compose up -d db cache
+
+pnpm dev

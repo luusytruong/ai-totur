@@ -1,0 +1,99 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: ppat-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ppat
+    ports:
+      - '5432:5432'
+    volumes:
+      - ppat-db-data:/var/lib/postgresql/data
+    networks:
+      - ppat-network
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-ppat}' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  cache:
+    image: redis:7-alpine
+    container_name: ppat-redis
+    ports:
+      - '6379:6379'
+    networks:
+      - ppat-network
+    healthcheck:
+      test: [ 'CMD', 'redis-cli', 'ping' ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/be/Dockerfile
+    container_name: ppat-api
+    init: true
+    ports:
+      - '${PORT:-3000}:3000'
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-ppat}
+      - REDIS_URL=redis://cache:6379
+      - JWT_SECRET=${JWT_SECRET:-super-secret-jwt-key}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
+      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - NODE_ENV=production
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    networks:
+      - ppat-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/fe/Dockerfile
+      args:
+        API_URL: http://api:3000
+    container_name: ppat-web
+    ports:
+      - '80:80'
+    environment:
+      API_URL: http://api:3000
+      NODE_ENV: production
+      PORT: 80
+    networks:
+      - ppat-network
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  ppat-db-data:
+
+
+networks:
+  ppat-network:
+    driver: bridge

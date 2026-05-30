@@ -1,0 +1,16 @@
+{
+  "name": "Leaf",
+  "lang": "vi",
+  "start_url": "/new",
+  "display": "standalone",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/leaf.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "prefer_related_applications": false
+}

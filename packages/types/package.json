@@ -1,0 +1,44 @@
+{
+  "name": "@workspace/types",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "db": [
+        "dist/db/index.d.ts"
+      ]
+    }
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./db": {
+      "types": "./dist/db/index.d.ts",
+      "import": "./dist/db/index.js",
+      "require": "./dist/db/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts src/db/index.ts --format cjs,esm --dts",
+    "dev": "tsup src/index.ts src/db/index.ts --format cjs,esm --watch --dts",
+    "lint": "eslint",
+    "format": "prettier --write \"**/*.{ts,tsx}\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.4",
+    "tsup": "^8.5.1",
+    "typescript": "^5.7.3"
+  }
+}
