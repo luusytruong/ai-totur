@@ -1,0 +1,184 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+
+\section{Tổng quan về AI và Mô hình Ngôn ngữ Lớn (LLM)}
+
+\subsection{Trí tuệ nhân tạo (Artificial Intelligence)}
+
+Trí tuệ nhân tạo (AI) là nhánh nghiên cứu trong khoa học máy tính nhằm tạo ra các hệ thống có thể thực hiện các tác vụ thường đòi hỏi nhận thức của con người từ nhận dạng ngôn ngữ, suy luận logic cho đến ra quyết định trong môi trường phức tạp. Trong thập kỷ gần đây, sự bùng nổ về dữ liệu và năng lực tính toán đã đưa AI từ phòng thí nghiệm vào ứng dụng thực tiễn ở hầu hết mọi lĩnh vực, từ y tế, tài chính đến giáo dục và kỹ thuật phần mềm.
+
+Xét về phạm vi năng lực, AI hiện nay được phân thành hai nhóm. Nhóm thứ nhất thường gọi là Narrow AI hay AI chuyên biệt bao gồm các mô hình được tối ưu hóa cho một miền bài toán xác định, chẳng hạn phân loại văn bản, nhận dạng giọng nói hay sinh code. GPT-4o thuộc nhóm này: dù hiệu năng rất cao trong xử lý ngôn ngữ tự nhiên và lập luận, mô hình không có nhận thức tổng quát hay ý thức. Nhóm thứ hai Artificial General Intelligence (AGI) là dạng AI lý thuyết có thể linh hoạt giải quyết bất kỳ vấn đề nào tương tự con người. AGI chưa được hiện thực hóa và vẫn là chủ đề nghiên cứu mở trong cộng đồng khoa học.
+
+Trong bối cảnh giáo dục, điều AI làm được mà các phương pháp truyền thống khó đạt là phục vụ từng học viên một cách riêng lẻ. Thay vì một giáo trình cố định áp dụng đồng loạt, AI có thể quan sát hành vi học tập của từng người chủ đề nào được nắm vững, lỗi nào lặp đi lặp lại, nhịp độ tiến bộ ra sao và điều chỉnh nội dung tương ứng. Grassucci và cộng sự (2025) phân tích vai trò kép của LLM trong học tập: một mặt đóng vai gia sư kiên nhẫn, dẫn dắt học viên qua từng bước của bài tập; mặt khác đóng vai cộng tác viên, giúp học viên tiếp cận các bài toán mở phức tạp hơn mức chương trình quy định.
+
+Với lĩnh vực lập trình, AI có thể hỗ trợ ở nhiều tầng: giải thích khái niệm, chỉ ra lỗi trong code, gợi ý hướng debug và phân tích nguyên nhân sai lầm. Tuy nhiên, các công cụ phổ biến hiện nay như ChatGPT vận hành theo từng phiên độc lập không duy trì bộ nhớ về người dùng giữa các lần truy cập, không biết học viên đang ở bước nào trong lộ trình, và không điều chỉnh chiến lược giảng dạy theo trình độ thực tế. Đây là khoảng trống mà hệ thống PPAT trong đồ án này hướng đến lấp đầy thông qua cơ chế knowledge log và dynamic system prompt.
+
+\subsection{Mô hình ngôn ngữ lớn (Large Language Model)}
+
+Mô hình ngôn ngữ lớn (LLM) là lớp mô hình AI được huấn luyện trên tập văn bản quy mô cực lớn với mục tiêu học cách hiểu và sinh ngôn ngữ tự nhiên. Tuy các nghiên cứu về xử lý ngôn ngữ tự nhiên đã có từ thập niên 1950, bước ngoặt kỹ thuật thực sự xảy ra năm 2017 khi Vaswani và cộng sự giới thiệu kiến trúc Transformer nền tảng được hầu hết LLM hiện đại kế thừa.
+
+Điểm đột phá của Transformer nằm ở cơ chế self-attention: thay vì đọc văn bản tuần tự từng từ như các kiến trúc RNN hay LSTM trước đó, mô hình có thể tính toán song song mức độ liên quan giữa tất cả các từ trong một chuỗi. Nhờ vậy, các phụ thuộc ngữ nghĩa tầm xa ví dụ đại từ ở cuối câu tham chiếu đến danh từ ở đầu đoạn được nắm bắt hiệu quả hơn nhiều, đồng thời tốc độ huấn luyện cũng cải thiện đáng kể so với các phương pháp trước.
+
+Thuật ngữ "large" phản ánh quy mô tham số ngày càng tăng của các mô hình thế hệ mới. BERT (Google, 2019) có khoảng 110 triệu tham số; PaLM 2 (2023) đạt tới 340 tỷ. Các mô hình này được huấn luyện theo kiểu unsupervised học trực tiếp từ văn bản thô mà không cần nhãn thủ công thông qua mục tiêu dự đoán token tiếp theo trong chuỗi.
+
+Quá trình sinh văn bản của LLM dựa trên autoregressive generation: mỗi token được chọn dựa trên phân phối xác suất tính từ toàn bộ ngữ cảnh phía trước. Đặc điểm này lý giải tại sao cùng một câu hỏi có thể nhận được các câu trả lời khác nhau qua từng lần chạy, và cũng là nguồn gốc của hiện tượng hallucination khi mô hình sinh ra nội dung có vẻ hợp lý về mặt hình thức nhưng không chính xác về nội dung thực tế.
+
+Hallucination là hạn chế kỹ thuật cần đặc biệt lưu ý khi triển khai LLM trong môi trường giáo dục. Khác với tra cứu dữ kiện từ cơ sở dữ liệu, mô hình không "nhớ" thông tin theo nghĩa tường minh mà suy diễn câu trả lời từ các quy luật thống kê học được. Do đó, trong hệ thống gia sư lập trình, sinh viên cần được hướng dẫn luôn kiểm thử code do AI đề xuất thay vì chấp nhận mà không xác minh.
+
+Dưới đây là một số khái niệm kỹ thuật thường gặp khi làm việc với LLM:
+
+\begin{itemize}
+    \item Token là đơn vị cơ bản mà mô hình dùng để xử lý ngôn ngữ. Một token có thể là một từ, một phần của từ hoặc một ký tự đặc biệt. Chi phí sử dụng API của các LLM thường được tính theo số lượng token đầu vào và đầu ra.
+    \item Context window là giới hạn số token mà mô hình có thể ghi nhớ trong một lần xử lý. Context càng lớn, mô hình càng có thể hiểu được những đoạn hội thoại dài hoặc tài liệu phức tạp. Trong dự án này, GPT-4o được sử dụng với context window lên tới 128.000 token, đủ để chứa toàn bộ knowledge log, lịch sử hội thoại và dữ liệu bài học của một sinh viên trong một request duy nhất.
+    \item Prompt Engineering là kỹ thuật thiết kế câu lệnh đầu vào để hướng mô hình tạo ra phản hồi chính xác và phù hợp với mục tiêu. Một prompt có thể bao gồm system prompt, user prompt, ví dụ minh họa và dữ liệu ngữ cảnh. Trong hệ thống PPAT, backend xây dựng dynamic system prompt tức câu lệnh hệ thống được tạo tự động dựa trên knowledge log của từng sinh viên, bao gồm trình độ hiện tại, chủ đề đã học, lỗi thường gặp và tốc độ tiến bộ trước khi gửi đến GPT-4o.
+    \item Temperature là tham số điều chỉnh mức độ ngẫu nhiên trong phản hồi của mô hình. Giá trị thấp (0.1-0.3) cho phản hồi ổn định và nhất quán, phù hợp khi cần hướng dẫn lập trình chính xác. Giá trị cao (0.7-1.0) cho phản hồi đa dạng và sáng tạo hơn. Trong hệ thống AI Tutor, temperature được đặt ở mức thấp đến trung bình để đảm bảo chất lượng hướng dẫn.
+\end{itemize}
+
+\subsection{GPT-4o}
+
+GPT-4o là phiên bản được đánh giá rất cao trong dòng mô hình GPT của OpenAI, ra mắt tháng 13/5/2024. So với các phiên bản trước, GPT-4o được thiết kế để xử lý hiệu quả hơn các tác vụ đòi hỏi lập luận nhiều bước, hiểu ngữ cảnh dài và sinh code có chất lượng cao những đặc tính trực tiếp liên quan đến bài toán gia sư lập trình.
+
+GPT-4o có một số điểm mạnh nổi bật so với các mô hình thế hệ trước. Về khả năng xử lý code, mô hình có thể giải thích thuật toán, phân tích lỗi cú pháp và logic, gợi ý cách sửa và giải thích từng bước giải quyết bài toán những tính năng phù hợp trực tiếp với yêu cầu của một hệ thống gia sư lập trình. Về context window, GPT-4o hỗ trợ tới 128.000 token, cho phép hệ thống duy trì toàn bộ lịch sử học tập của sinh viên trong suốt phiên làm việc mà không bị mất ngữ cảnh. Ngoài ra, GPT-4o hỗ trợ streaming API, tức trả về từng token theo thời gian thực thay vì chờ sinh xong toàn bộ câu trả lời giúp giao diện chat phản hồi mượt mà và tạo trải nghiệm tương tác tự nhiên hơn cho sinh viên.
+
+\section{LLM trong giáo dục lập trình}
+
+\subsection{Vai trò kép của LLM trong giáo dục}
+
+Grassucci và cộng sự (2025) phân tích LLM trong môi trường học tập qua hai góc nhìn bổ sung cho nhau, không thay thế nhau.
+
+Góc nhìn thứ nhất đặt LLM ở vị trí gia sư kiên nhẫn. Khác với giáo viên trong lớp đông phải điều tiết theo tốc độ trung bình, một LLM có thể phục vụ riêng từng người học vào bất kỳ thời điểm nào giải thích lại khái niệm theo cách khác khi sinh viên chưa hiểu, thu gọn giải thích khi sinh viên đã nắm, và chỉ ra đúng điểm sai thay vì đưa ra nhận xét chung chung. Khả năng điều chỉnh tức thì trong quá trình hội thoại là thứ sách giáo khoa tĩnh không thể làm được.
+
+Góc nhìn thứ hai đặt LLM ở vị trí đối tác khám phá. Thay vì giới hạn trong các bài tập có sẵn, LLM có thể dẫn dắt sinh viên tiếp cận bài toán mở, thử nghiệm nhiều hướng tiếp cận và tự đánh giá kết quả. Đây là kỹ năng quan trọng trong thực tế nghề nghiệp nơi vấn đề không bao giờ được đóng gói sẵn kèm hướng dẫn giải.
+
+Điều cả hai vai trò đều yêu cầu, theo các tác giả, là LLM không được đóng vai người cung cấp đáp án. Giá trị thực nằm ở việc hỗ trợ sinh viên tự xây dựng chiến lược giải quyết vấn đề chuyển người học từ trạng thái thụ động sang chủ động. Đây là nền tảng lý thuyết trực tiếp cho phương pháp Socratic được triển khai trong PPAT: AI đặt câu hỏi dẫn dắt trước, chỉ cung cấp gợi ý nhỏ khi sinh viên thực sự bí sau nhiều lần thử.
+
+\subsection{Cá nhân hóa học tập với LLM}
+
+Một lớp học điển hình tập hợp sinh viên ở nhiều trình độ khác nhau, trong khi giáo viên chỉ có thể giảng theo một tốc độ duy nhất. Kết quả là sinh viên yếu bị bỏ lại phía sau trước khi lỗ hổng được phát hiện, còn sinh viên giỏi thiếu thách thức để tiến xa hơn. LLM mở ra khả năng can thiệp cá nhân mà quy mô lớp học truyền thống không cho phép.
+
+Hình thức cá nhân hóa cơ bản nhất là điều chỉnh theo năng lực hiện tại: nếu sinh viên chưa hiểu, mô hình giải thích lại từ góc độ khác; nếu đã nắm vững, mô hình rút gọn và đẩy sang nội dung tiếp theo; nếu ở trình độ cao, mô hình mở rộng sang các khía cạnh nâng cao hơn. Sự điều chỉnh này xảy ra ngay trong luồng hội thoại, không cần cài đặt thủ công.
+
+Mức cá nhân hóa sâu hơn đòi hỏi tích hợp hồ sơ học tập cá nhân bao gồm lịch sử làm bài, các lỗi lặp đi lặp lại và tốc độ tiến bộ để mô hình có ngữ cảnh đủ phong phú khi xây dựng phản hồi. Ví dụ cụ thể: một sinh viên hay quên điều kiện dừng trong đệ quy sẽ được AI chủ động nhắc về điểm này ngay khi bắt đầu bài liên quan, thay vì chờ sinh viên mắc lỗi rồi mới phản ứng. Đây chính xác là cơ chế knowledge log được xây dựng trong hệ thống PPAT.
+
+Một hướng nghiên cứu xa hơn mà Grassucci và cộng sự (2025) đề xuất là tích hợp tín hiệu sinh lý nhịp tim, biểu cảm khuôn mặt để nhận diện trạng thái cảm xúc và điều chỉnh cách dạy khi phát hiện người học đang căng thẳng hoặc mất tập trung. Hướng này hiện còn trong giai đoạn nghiên cứu và nằm ngoài phạm vi của đồ án.
+
+\subsection{Nguyên tắc thiết kế hệ thống PPAT từ cơ sở lý thuyết}
+
+Từ nền tảng lý thuyết trình bày ở trên, PPAT được thiết kế phát triển theo bốn nguyên tắc cốt lõi.
+
+Thứ nhất, mỗi khi sinh viên gửi câu hỏi, backend không gửi ngay đến GPT-4o mà trước tiên truy vấn knowledge log của sinh viên đó từ cơ sở dữ liệu, sau đó xây dựng một system prompt động chứa đầy đủ thông tin về trình độ, chủ đề đã học và lỗi thường gặp. Nhờ vậy, cùng một câu hỏi sẽ nhận được phản hồi hoàn toàn khác nhau tùy vào profile của từng sinh viên.
+
+Thứ hai, AI áp dụng phương pháp Socratic đặt câu hỏi gợi mở thay vì đưa ra đáp án để buộc sinh viên chủ động suy nghĩ. Nếu sinh viên đã thử hai lần mà vẫn chưa ra, AI mới cung cấp gợi ý nhỏ, không phải lời giải hoàn chỉnh.
+
+Thứ ba, khi phát hiện sinh viên chưa có kiến thức nền cần thiết cho chủ đề đang hỏi, AI sẽ nhẹ nhàng chuyển hướng về phần nền tảng trước, thay vì cố gắng giải thích một khái niệm mà sinh viên chưa đủ điều kiện tiếp thu.
+
+Thứ tư, sau mỗi phiên tương tác, hệ thống tự động cập nhật knowledge log dựa trên hành vi của sinh viên bài đã hoàn thành, lỗi đã gặp, câu hỏi đã đặt giúp system prompt ngày càng chính xác và phù hợp hơn theo thời gian.
+
+\section{Công nghệ Frontend}
+
+\subsection{Next.js và React 19}
+
+Next.js là framework phát triển web do Vercel duy trì, xây dựng trên nền React và tập trung giải quyết các vấn đề mà React thuần không xử lý sẵn: server-side rendering, routing theo cấu trúc thư mục, tối ưu hóa hình ảnh và phân tách code tự động. Đây là một trong những lựa chọn phổ biến nhất cho ứng dụng web fullstack hiện đại.
+
+PPAT sử dụng Next.js 15 kết hợp React 19 hai phiên bản mới nhất tại thời điểm thực hiện đồ án. React 19 bổ sung Server Components và Actions, cho phép một phần logic chạy trực tiếp trên server mà không cần round-trip API riêng, giúp giảm độ phức tạp của frontend đồng thời cải thiện thời gian tải trang đầu tiên.
+
+Điểm khác biệt lớn nhất so với React thuần là Next.js tích hợp sẵn nhiều tính năng mà React thuần không có. Hệ thống routing dựa trên cấu trúc thư mục theo App Router giúp tổ chức code rõ ràng mà không cần cài thêm thư viện routing riêng. Quan trọng hơn, Next.js hỗ trợ Server Actions cơ chế cho phép gọi logic phía server trực tiếp từ component React mà không cần định nghĩa một API endpoint riêng. Điều này giúp đơn giản hóa luồng dữ liệu cho các tác vụ như submit form, cập nhật tiến độ học tập hay lưu lịch sử hội thoại, vì toàn bộ được xử lý trong cùng một codebase thay vì phải tách ra thành REST API độc lập.
+
+Dự án cũng bật Turbopack trình bundler thế hệ mới được tích hợp vào Next.js để thay thế Webpack trong môi trường phát triển. Turbopack sử dụng kiến trúc xử lý song song, giúp tốc độ khởi động và hot reload nhanh hơn đáng kể so với Webpack, đặc biệt khi dự án có nhiều thư viện UI component.
+
+Lý do chọn Next.js thay vì React thuần: ngoài việc tích hợp sẵn Server Actions và routing, Next.js còn hỗ trợ tốt cả Server Components lẫn Client Components trong cùng một ứng dụng, giúp tối ưu hóa hiệu năng tải trang mà không cần cấu hình thêm.
+
+\subsection{TypeScript}
+
+Toàn bộ frontend được viết bằng TypeScript 5, ngôn ngữ mở rộng của JavaScript với hệ thống kiểu tĩnh. TypeScript giúp phát hiện lỗi ngay tại thời điểm viết code thay vì chỉ khi chạy, đặc biệt hữu ích trong dự án có nhiều interface phức tạp như knowledge log, user analytics hay các kiểu dữ liệu trao đổi giữa frontend và backend. Dự án cấu hình tsc --noEmit như một bước kiểm tra kiểu riêng biệt trong CI, đảm bảo không có lỗi kiểu nào lọt vào bản build.
+
+Việc dùng TypeScript đồng nhất ở cả frontend và backend còn cho phép chia sẻ kiểu dữ liệu qua package @workspace/types một package nội bộ trong monorepo chứa các interface dùng chung. Nhờ đó, khi định nghĩa kiểu dữ liệu của một Message hay UserAnalytics, cả hai phía đều tham chiếu đến cùng một nguồn sự thật, tránh được tình trạng mismatch giữa request và response.
+
+\subsection{TailwindCSS và hệ thống UI Component}
+
+Về styling, dự án sử dụng TailwindCSS 4 theo hướng tiếp cận utility-first thay vì viết file CSS riêng, các lớp tiện ích được áp dụng trực tiếp vào JSX. TailwindCSS 4 chuyển sang cấu hình hoàn toàn bằng CSS thay vì file tailwind.config.js như các phiên bản trước, tích hợp qua PostCSS plugin @tailwindcss/postcss. Dự án cũng cài thêm @tailwindcss/typography để render nội dung Markdown từ bài học và tin nhắn AI với typography chuẩn mà không cần tự định nghĩa style.
+
+Hệ thống UI component được xây dựng trên Radix UI kết hợp với shadcn/ui. Radix UI cung cấp các primitive component đã xử lý sẵn accessibility (ARIA), keyboard navigation và focus management những yếu tố quan trọng nhưng tốn công tự làm nếu xây từ đầu. shadcn/ui đóng vai trò là lớp styling trên Radix UI, cung cấp các component hoàn chỉnh như Dialog, Dropdown, Toast, Tabs, Select, Accordion mà có thể tùy chỉnh tự do vì code được copy thẳng vào dự án thay vì import từ thư viện đóng gói. Bên cạnh đó, Base UI cũng được sử dụng cho một số component cần kiểm soát hành vi chi tiết hơn.
+
+Các thư viện hỗ trợ UI đáng chú ý khác bao gồm Lucide React cung cấp bộ icon nhất quán, Sonner cho toast notification dạng stack, Vaul cho drawer component, next-themes xử lý dark/light mode, và react-resizable-panels cho giao diện split-view trong màn hình code editor nơi đề bài và editor hiển thị song song.
+
+\subsection{Monaco Editor}
+
+Monaco Editor là engine trình soạn thảo code được dùng trong Visual Studio Code, được tích hợp vào dự án qua package @monaco-editor/react. Monaco mang lại trải nghiệm code editor chuyên nghiệp ngay trên trình duyệt với đầy đủ các tính năng như syntax highlighting cho nhiều ngôn ngữ (Python, JavaScript, C++, Java), tự động hoàn thành, đánh dấu lỗi cú pháp theo thời gian thực và minimap. Trong màn hình làm bài tập, Monaco được đặt trong layout split-view cùng với phần đề bài, cho phép sinh viên đọc yêu cầu và viết code cùng lúc mà không phải cuộn trang.
+
+\subsection{Quản lý state và dữ liệu}
+
+Dự án sử dụng hai lớp quản lý state với mục đích khác nhau. TanStack Query (React Query) v5 xử lý toàn bộ server state tức dữ liệu được fetch từ API như danh sách bài học, tiến độ học tập, lịch sử hội thoại. TanStack Query cung cấp cơ chế caching, refetching tự động và đồng bộ hóa dữ liệu, giúp tránh việc fetch lại không cần thiết và giữ UI luôn phản ánh trạng thái mới nhất từ server. Zustand v5 đảm nhận client state tức các trạng thái cục bộ trên giao diện như trạng thái sidebar, theme, hay context của phiên làm bài hiện tại.
+
+Để xử lý form, dự án dùng React Hook Form v7 kết hợp với Zod v4 cho validation. React Hook Form quản lý trạng thái và validation của form theo hướng uncontrolled, giúp giảm số lần re-render. Zod định nghĩa schema validation bằng TypeScript với type inference tự động cùng một schema vừa được dùng để validate dữ liệu form ở frontend, và sử dụng trên server để kiểm tra dữ liệu và ép kiểu đầu vào trước khi thực hiện thao tác dữ liệu.
+
+TanStack Table v8 được dùng cho các màn hình quản lý dữ liệu dạng bảng ở phía admin, hỗ trợ sẵn sorting, filtering và pagination ở phía client.
+
+\subsection{Xử lý nội dung Markdown và Streaming}
+
+Vì nội dung bài học và phản hồi từ AI Tutor đều được lưu và truyền dưới dạng Markdown, dự án dùng react-markdown kết hợp với plugin remark-gfm để render các phần tử như bảng, danh sách, checkbox và fenced code block đúng theo chuẩn GitHub Flavored Markdown. Các đoạn code trong phản hồi AI được highlight cú pháp bằng react-syntax-highlighter, giúp sinh viên dễ đọc code mẫu hơn khi AI đưa ra ví dụ minh họa.
+
+Để hiển thị biểu đồ trong trang theo dõi tiến độ bao gồm line chart tiến độ theo thời gian, radar chart kỹ năng và heatmap hoạt động dự án sử dụng Recharts, thư viện charting xây dựng trên D3 kết hợp API React-native.
+
+\section{Công nghệ Backend}
+
+\subsection{Fastify \& TypeScript}
+
+Fastify là một web framework cho Node.js được thiết kế với triết lý ưu tiên hiệu năng và tính mở rộng. So với Express framework phổ biến nhất trong hệ sinh thái Node.js Fastify xử lý request nhanh hơn xấp xỉ hai lần nhờ cơ chế serialization JSON tối ưu và kiến trúc plugin được thiết kế lại từ đầu. Mỗi tính năng trong Fastify đều được đóng gói dưới dạng plugin độc lập, cho phép hệ thống chỉ tải những thành phần thực sự cần thiết thay vì khởi tạo toàn bộ middleware như cách truyền thống.
+
+Điểm đắt giá của Fastify là khả năng kết hợp schema validation ngay trong khai báo route thông qua JSON Schema hoặc thư viện bên ngoài như Zod. Khi kết hợp với TypeScript, toàn bộ luồng dữ liệu từ request đầu vào đến response đầu ra đều được kiểm tra kiểu tĩnh tại thời điểm biên dịch, loại bỏ một lớp lỗi runtime phổ biến trong các dự án JavaScript thuần. Việc đồng nhất TypeScript trên cả frontend lẫn backend còn mang lại lợi ích quan trọng: các kiểu dữ liệu dùng chung như entity, request body, response schema có thể được định nghĩa một lần trong package chung và chia sẻ giữa hai đầu ứng dụng mà không cần viết lại.
+
+Trong hệ thống PPAT, Fastify đảm nhận vai trò API Gateway tiếp nhận toàn bộ request từ React frontend, xử lý xác thực JWT, điều phối logic nghiệp vụ và gọi xuống các tầng dữ liệu hoặc dịch vụ AI tương ứng.
+
+\subsection{Zod \& Drizzle ORM}
+
+Zod là thư viện validation schema cho TypeScript với đặc điểm quan trọng là tự động suy diễn kiểu TypeScript từ định nghĩa schema, loại bỏ hoàn toàn sự trùng lặp giữa khai báo kiểu và logic kiểm tra dữ liệu. Thay vì viết interface TypeScript riêng rồi viết thêm hàm validate riêng, lập trình viên chỉ cần định nghĩa một schema Zod duy nhất và từ đó suy ra cả kiểu lẫn validation. Trong PPAT, Zod được dùng để kiểm tra toàn bộ request body trước khi đưa vào xử lý từ payload đăng ký tài khoản, nội dung tin nhắn chat, đến code submission của sinh viên đảm bảo dữ liệu đầu vào luôn hợp lệ trước khi chạm vào logic nghiệp vụ.
+
+Drizzle ORM là một Object Relational Mapper thế hệ mới cho TypeScript, theo hướng "type-safe by default". Khác với các ORM truyền thống như Sequelize hay TypeORM vốn sinh ra query dựa trên decorator và reflection, Drizzle định nghĩa schema database trực tiếp bằng TypeScript và tự động suy diễn kiểu cho kết quả truy vấn. Điều này có nghĩa là khi thực hiện JOIN giữa bảng users và user\_analytics, TypeScript biết chính xác kết quả trả về có những trường nào mà không cần cast thủ công. Drizzle cũng hỗ trợ migration tự động theo dõi thay đổi của schema và tạo ra SQL migration script tương ứng giúp quá trình phát triển và triển khai trở nên nhất quán hơn.
+
+\subsection{Code Runner Sandbox (Dockerode \& tar-stream)}
+
+Một trong những yêu cầu kỹ thuật đặc thù của hệ thống gia sư lập trình là khả năng thực thi code do người dùng gửi lên một cách an toàn. Code tùy ý từ người dùng có thể chứa vòng lặp vô tận, truy cập hệ thống file, hoặc gọi network tất cả đều là mối nguy nếu chạy trực tiếp trên server. Giải pháp được áp dụng trong PPAT là cô lập mỗi lần thực thi trong một Docker container tạm thời với tài nguyên bị giới hạn nghiêm ngặt: không có quyền truy cập mạng, không có quyền ghi vào filesystem, và tự động bị huỷ sau tối đa mười giây.
+
+Dockerode là thư viện Node.js cho phép giao tiếp với Docker Engine API từ bên trong ứng dụng backend mà không cần gọi CLI. Thông qua Dockerode, Fastify API có thể tạo container mới, stream stdout và stderr về server, rồi xoá container ngay sau khi thực thi xong tất cả trong một request/response cycle. tar-stream đóng vai trò bổ trợ: vì Docker yêu cầu file được đưa vào container dưới định dạng tar archive, tar-stream được dùng để đóng gói source code của sinh viên thành buffer trước khi copy vào container, tránh việc phải ghi tạm ra đĩa.
+
+Cách tiếp cận này cho phép Code Runner nằm hoàn toàn bên trong Fastify service thay vì phải tách thành một microservice độc lập, giữ kiến trúc gọn gàng ở giai đoạn hiện tại mà vẫn đảm bảo mức độ cô lập cần thiết cho môi trường thực thi không tin cậy.
+
+\section{Cơ sở dữ liệu và Cache}
+
+\subsection{PostgreSQL 15}
+
+PostgreSQL là hệ quản trị cơ sở dữ liệu quan hệ mã nguồn mở với lịch sử phát triển hơn ba mươi năm, nổi tiếng với sự tuân thủ nghiêm ngặt chuẩn SQL và khả năng mở rộng linh hoạt. Trong PPAT, PostgreSQL được chọn vì hai lý do kỹ thuật chính. Thứ nhất, đây là yêu cầu công nghệ của đồ án. Thứ hai, PostgreSQL hỗ trợ kiểu dữ liệu JSONB lưu trữ JSON nhị phân có thể index và truy vấn rất phù hợp để lưu knowledge log của từng sinh viên. Các trường như known\_topics, error\_patterns, hay confidence\_scores có cấu trúc thay đổi theo từng người dùng và theo thời gian; nếu chuẩn hóa hoàn toàn thành bảng quan hệ sẽ phức tạp không cần thiết, trong khi JSONB cho phép lưu linh hoạt và vẫn truy vấn được bằng SQL thông thường.
+
+Tính nhất quán ACID của PostgreSQL đảm bảo rằng khi một sinh viên nộp bài tập và hệ thống cùng lúc cập nhật user\_progress lẫn user\_analytics, hai thao tác này luôn thành công hoặc cùng thất bại không có trạng thái nửa vời khiến dữ liệu học tập bị sai lệch.
+
+\subsection{Redis 7}
+
+Redis là cơ sở dữ liệu in-memory chạy trên server, hỗ trợ đa dạng cấu trúc dữ liệu, hoạt động chủ yếu trong RAM nên tốc độ đọc/ghi nhanh hơn vài bậc so với cơ sở dữ liệu truyền thống. Trong PPAT, Redis đảm nhận ba vai trò riêng biệt.
+
+Vai trò thứ nhất là quản lý session và refresh token: sau khi người dùng đăng nhập, refresh token được lưu vào Redis với TTL bảy ngày thay vì lưu vào PostgreSQL, giúp quá trình kiểm tra và vô hiệu hóa token diễn ra cực nhanh mà không tạo thêm tải cho database chính.
+
+Vai trò thứ hai là cache danh sách bài học theo mô hình cache-aside: khi có request GET /\allowbreak api/\allowbreak lessons, hệ thống kiểm tra Redis trước; nếu có cache thì trả về ngay (TTL một giờ), nếu miss mới truy vấn PostgreSQL và lưu kết quả vào Redis cho lần tiếp theo. Dữ liệu bài học ít thay đổi nhưng được đọc rất nhiều, nên cache-aside ở đây mang lại hiệu quả rõ rệt.
+
+Vai trò thứ ba là rate limiting: Redis được dùng để đếm số lượng request từ mỗi IP trong khoảng thời gian nhất định, kết hợp với plugin @fastify/rate-limit để bảo vệ các endpoint nhạy cảm như đăng nhập hay gọi AI. Redis bật chế độ AOF (Append Only File) để đảm bảo dữ liệu không mất khi container khởi động lại.
+
+\section{Kiến trúc SOA và Docker}
+
+\subsection{Service-Oriented Architecture (SOA)}
+
+SOA là phong cách kiến trúc phần mềm tổ chức hệ thống thành các đơn vị dịch vụ độc lập, mỗi đơn vị phụ trách một tập hợp chức năng xác định và trao đổi với nhau qua giao diện API được định nghĩa trước. Khác với kiến trúc monolithic nơi toàn bộ logic nghiệp vụ gộp chung trong một codebase SOA cho phép phát triển, kiểm thử và triển khai từng service riêng biệt mà không kéo theo rủi ro cho phần còn lại.
+
+Trong PPAT, kiến trúc SOA được hiện thực hóa qua bốn tầng tách biệt về trách nhiệm. Frontend React đảm nhận toàn bộ phần giao diện và tương tác người dùng. Backend Fastify API tiếp nhận request, thực thi logic nghiệp vụ và điều phối luồng xử lý. AI Orchestrator chịu trách nhiệm xây dựng dynamic system prompt từ knowledge log rồi chuyển tiếp đến OpenAI, đồng thời pipe stream response về phía client. Data Layer gồm PostgreSQL lưu trữ dữ liệu bền vững và Redis xử lý cache cùng session.
+
+Ranh giới rõ ràng giữa các tầng tạo ra lợi thế bảo trì thực tế: Code Runner có thể được tách thành service độc lập khi cần mở rộng sang nhiều ngôn ngữ, hoặc Analytics Service có thể được bổ sung sau mà không cần chỉnh sửa code của các service hiện có.
+
+\subsection{Docker \& Docker Compose}
+
+Docker là nền tảng container hóa cho phép đóng gói ứng dụng cùng toàn bộ dependencies vào một đơn vị có thể chạy nhất quán trên bất kỳ môi trường nào từ máy phát triển của lập trình viên đến server production mà không gặp vấn đề "chạy được trên máy tôi". Mỗi container chia sẻ kernel của hệ điều hành host nhưng được cô lập về filesystem, process và network, nhẹ hơn đáng kể so với máy ảo truyền thống.
+
+Docker Compose là công cụ định nghĩa và quản lý nhiều container cùng lúc thông qua một file cấu hình YAML duy nhất. Trong PPAT, Docker Compose khởi động bốn service song song: api chứa Fastify backend, web chứa React frontend được serve qua Nginx, db chứa PostgreSQL với volume persistent để dữ liệu không mất khi restart, và cache chứa Redis. Tất cả kết nối với nhau qua internal Docker network ppat-network các service giao tiếp bằng tên service thay vì IP cứng, và không service nào tiếp xúc trực tiếp với internet ngoại trừ web qua port 80. Ngoài bốn container cố định này, backend còn tạo thêm container tạm thời khi cần thực thi code của sinh viên qua Dockerode các container này được huỷ ngay sau khi thực thi xong và không được khai báo trong Compose file.
+
+
+\end{document}

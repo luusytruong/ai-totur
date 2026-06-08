@@ -1,0 +1,23 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+
+Đồ án đã nghiên cứu và xây dựng thành công Hệ thống Gia sư Lập trình Cá nhân hóa sử dụng Mô hình Ngôn ngữ Lớn với các kết quả chính sau:
+
+\begin{itemize}
+    \item Thiết kế và triển khai giao diện chat-based tích hợp Monaco Code Editor, hỗ trợ trải nghiệm học lập trình trực tiếp.
+    \item Tích hợp OpenAI GPT-4o với cơ chế Dynamic System Prompt, cá nhân hóa phản hồi dựa trên knowledge log của từng sinh viên.
+    \item Xây dựng module theo dõi tiến độ với Knowledge Enrichment, hệ thống tự động cập nhật hồ sơ học tập và cải thiện chất lượng phản hồi theo thời gian.
+    \item Xây dựng code runner đa ngôn ngữ (Python, JavaScript, C++, Java) trong Docker sandbox cô lập, tích hợp Gia sư AI trực tiếp trong trình soạn thảo code.
+    \item Triển khai thành công trên Docker Compose với 4 service độc lập theo kiến trúc SOA.
+    \item Tạo dữ liệu thử nghiệm đầy đủ: 100 người dùng, 50 bài học, 200 bài tập có test cases.
+    \item Kiểm thử đạt 15/15 test cases passed, performance test với 50 người dùng đồng thời đạt p(95) = 80.66ms, tỷ lệ lỗi 0\%.
+\end{itemize}
+
+Kết quả khảo sát 47 sinh viên cho thấy hơn 94\% đã sử dụng AI trong học tập nhưng chỉ dừng ở mức AI tổng quát, không cá nhân hóa. Hơn 90\% gặp ít nhất một trong các khó khăn mà một gia sư cá nhân có thể giải quyết trực tiếp. Hệ thống PPAT được xây dựng để lấp đầy khoảng trống này: không chỉ trả lời câu hỏi đơn lẻ như ChatGPT thông thường, mà theo dõi toàn bộ hành trình học tập và điều chỉnh từng phản hồi phù hợp với trình độ, lỗi đã mắc và tốc độ tiến bộ của từng sinh viên.
+
+Trong tương lai, hệ thống có thể được mở rộng với fine-tuning model tiếng Việt, tích hợp RAG với tài liệu của trường, và phát triển kiến trúc multi-agent AI để nâng cao hơn nữa chất lượng hướng dẫn cá nhân hóa.
+
+
+\end{document}
