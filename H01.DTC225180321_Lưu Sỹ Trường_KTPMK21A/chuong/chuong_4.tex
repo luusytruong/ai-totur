@@ -1,0 +1,596 @@
+\documentclass[../main.tex]{subfiles}
+
+\begin{document}
+
+
+\section{Môi trường và Stack công nghệ}
+
+Hệ thống PPAT được xây dựng trên nền tảng TypeScript toàn stack, đảm bảo tính nhất quán về kiểu dữ liệu giữa frontend và backend thông qua package @workspace/types dùng chung trong monorepo. Bảng dưới tổng hợp các công nghệ chính được sử dụng:
+
+
+{
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{|p{2.0cm}|p{4cm}|p{2.0cm}|X|}
+\caption{Bảng tổng hợp công nghệ của thống}
+\label{tab:bang-tong-hop-cong-nghe-cua-thong}
+\\
+\hline
+\textbf{Layer} & \textbf{Công nghệ} & \textbf{Version} & \textbf{Lý do chọn} \\
+\hline
+Frontend & Next.js & 16.2.2001 & App Router, Server Actions, tích hợp sẵn routing \\
+\hline
+Frontend & React & 19 & Nền tảng của Next.js, ecosystem lớn \\
+\hline
+Frontend & TypeScript & 5.9 & Type safety, chia sẻ kiểu với backend qua monorepo \\
+\hline
+Frontend & TailwindCSS & 4 & Utility-first, tốc độ phát triển UI nhanh \\
+\hline
+Frontend & Radix UI + shadcn & latest & Accessibility sẵn có, tùy chỉnh tự do \\
+\hline
+Frontend & Monaco Editor & 4.7 & VSCode engine, syntax highlighting đa ngôn ngữ \\
+\hline
+Frontend & TanStack Query & 5 & Server state, caching, auto-refetch \\
+\hline
+Frontend & Zustand & 5 & Client state, lightweight \\
+\hline
+Frontend & React Hook Form + Zod & 7 + 4 & Form validation, type-safe schema \\
+\hline
+Frontend & Recharts & 3.8 & Biểu đồ tiến độ, radar chart kỹ năng \\
+\hline
+Backend & Fastify & 5.8 & Hiệu năng cao, plugin architecture \\
+\hline
+Backend & TypeScript & 6 & Consistency với frontend \\
+\hline
+Backend & Drizzle ORM & 0.45 & Type-safe ORM, migration support \\
+\hline
+Backend & Zod & 4 & Schema validation request/response \\
+\hline
+Backend & @fastify/jwt & 10 & Xác thực JWT, access + refresh token \\
+\hline
+Backend & @fastify/rate-limit & 10 & Rate limiting bảo vệ API \\
+\hline
+Backend & @fastify/helmet & 13 & Bảo mật HTTP headers \\
+\hline
+Backend & bcrypt & 6 & Mã hóa mật khẩu \\
+\hline
+Backend & Dockerode & 4 & Quản lý Docker container cho code runner \\
+\hline
+AI & OpenAI SDK & 6.33 & Official SDK, streaming, tool calling \\
+\hline
+AI & GPT-4o & - & Reasoning mạnh, context 128k token \\
+\hline
+Database & PostgreSQL & 15 & JSONB cho knowledge log, quan hệ phức tạp \\
+\hline
+Cache & Redis (ioredis) & 5.10 & Session, rate limiting, cache \\
+\hline
+Infra & Docker + Dockerode & - & Code runner sandbox isolation \\
+\hline
+Infra & Docker Compose & 2.x & Orchestrate 4 services \\
+\hline
+Test & Vitest & 4 & Unit test, coverage \\
+\hline
+Dev & Faker.js & 10 & Sinh dữ liệu thử nghiệm \\
+\hline
+Email & Resend & 6 & Gửi email thông báo \\
+\hline
+\end{tabularx}
+}
+
+Một số điểm đáng chú ý so với thiết kế ban đầu trong tài liệu phân tích: frontend sử dụng \textbf{Next.js 16} thay vì \textbf{React} thuần để tận dụng Server Actions và App Router; backend dùng Fastify 5 dùng OpenAI SDK trực tiếp, giúp quản lý pipeline AI có cấu trúc hơn; code runner được xây dựng bằng Dockerode để lập trình tạo và quản lý container sandbox từ Node.js thay vì gọi Docker CLI. Ngoài ra hệ thống tích hợp Resend để gửi email xác nhận tài khoản và thông báo cho sinh viên.
+
+\section{Cài đặt và triển khai Docker}
+
+\subsection{Cấu trúc Docker Compose}
+
+Hệ thống được đóng gói và triển khai bằng Docker Compose với 4 service chạy trong cùng một internal network tên ppat-network kiểu bridge. Các service giao tiếp với nhau qua tên service thay vì địa chỉ IP cố định, giúp cấu hình không thay đổi giữa các môi trường khác nhau.
+
+
+{
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{|p{2.0cm}|X|p{2.0cm}|X|}
+\caption{Cấu trúc file Docker Compose}
+\label{tab:cau-truc-file-docker-compose}
+\\
+\hline
+\textbf{Service} & \textbf{Image/Build} & \textbf{Port} & \textbf{Phụ thuộc} \\
+\hline
+db & postgres:15-alpine & 5432 &  \\
+\hline
+cache & redis:7-alpine & 6379 &  \\
+\hline
+api & Build từ Dockerfile backend & 3000 & db, cache \\
+\hline
+web & Build từ Dockerfile frontend & 80 & api \\
+\hline
+\end{tabularx}
+}
+
+Thứ tự khởi động được kiểm soát bằng depends\_on kết hợp condition: \texttt{service\_healthy}, tức service sau chỉ khởi động khi service trước đã vượt qua healthcheck, không chỉ đơn giản là đã start. Service api chờ cả db và cache healthy trước khi khởi động; web chờ api healthy. Cơ chế này tránh tình trạng backend khởi động nhưng chưa kết nối được database.
+
+Healthcheck được cấu hình riêng cho từng service. Service db dùng lệnh pg\_isready để xác nhận PostgreSQL sẵn sàng nhận kết nối. Service cache dùng redis-cli ping. Service api tự gọi endpoint /health bằng fetch, nếu response trả về OK thì mới được coi là healthy.
+
+Dữ liệu PostgreSQL được mount vào named volume ppat-db-data, đảm bảo dữ liệu không mất khi container restart hoặc rebuild image. Redis không cần persistent volume vì chỉ đóng vai trò cache và lưu session tạm thời.
+
+Điểm đặc biệt là service api mount /var/run/docker.sock từ máy host vào trong container. Đây là cơ chế cho phép backend tạo và quản lý container sandbox để thực thi code của sinh viên thông qua thư viện Dockerode, mà không cần cài Docker riêng bên trong container api.
+
+\subsection{Cấu trúc Dockerfile}
+
+Cả hai service api và web đều áp dụng kỹ thuật multi-stage build để tối ưu kích thước image production. Mỗi Dockerfile được chia làm hai giai đoạn.
+
+Giai đoạn đầu tiên chịu trách nhiệm build ứng dụng. Toàn bộ dependencies bao gồm cả devDependencies được cài vào, sau đó build package @workspace/types trước vì cả frontend lẫn backend đều phụ thuộc vào package dùng chung này. Tiếp theo mới build ứng dụng chính. Với backend, kết quả là thư mục dist/ chứa JavaScript đã compile từ TypeScript. Với frontend, Next.js tạo ra thư mục .next/ được tối ưu cho môi trường production.
+
+Giai đoạn thứ hai tạo image production thực sự. Chỉ những file cần thiết để chạy mới được giữ lại, dependencies được cài lại với flag --prod để loại bỏ toàn bộ devDependencies. Nhờ cách này, image production gọn hơn đáng kể so với single-stage build thông thường.
+
+Cả hai Dockerfile đều dùng node:20-alpine làm base image. Alpine Linux giúp giảm kích thước image xuống còn khoảng một phần ba so với image Ubuntu thông thường. Package manager được cố định ở pnpm@9.15.9 kích hoạt qua corepack để đảm bảo version nhất quán giữa môi trường phát triển và production.
+
+\subsection{Hướng dẫn cài đặt}
+
+Để triển khai hệ thống, máy chủ cần cài sẵn Docker Engine và Docker Compose. Sau khi clone repository về máy, bước đầu tiên là tạo file .env ở thư mục gốc với các biến môi trường bắt buộc:
+
+\begin{itemize}
+    \item POSTGRES\_USER=postgres
+    \item POSTGRES\_PASSWORD=your\_password
+    \item POSTGRES\_DB=ppat
+    \item JWT\_SECRET=your\_jwt\_secret\_key
+    \item OPENAI\_API\_KEY=sk-...
+    \item CORS\_ORIGIN=<http://localhost>
+    \item PORT=3000
+    \item RESEND\_API\_KEY=your\_resend\_api\_key
+    \item FRONTEND\_URL=<http://localhost>
+    \item LOG\_LEVEL=info
+\end{itemize}
+
+Sau khi có file .env, chạy lệnh sau để build toàn bộ image và khởi động các service: docker compose up --build -d
+
+Docker Compose sẽ tự động build image cho api và web, kéo image postgres:15-alpine và redis:7-alpine từ Docker Hub, tạo network và volume cần thiết, rồi khởi động các service theo đúng thứ tự healthcheck đã cấu hình.
+
+Sau khi service api healthy, chạy migration để tạo schema database và seed dữ liệu thử nghiệm:
+
+\begin{itemize}
+    \item docker compose exec api node apps/be/dist/db/migrate.js
+    \item docker compose exec api node apps/be/dist/scripts/seed.js
+\end{itemize}
+
+Truy cập \texttt{http://localhost} để vào giao diện web. Kiểm tra trạng thái API tại \texttt{http://localhost:3000/health}.
+
+Để dừng hệ thống mà vẫn giữ nguyên dữ liệu, dùng lệnh docker compose down. Nếu muốn dừng và xóa toàn bộ dữ liệu kể cả volume, thêm flag -v vào lệnh trên.
+
+\section{Bảo vệ hệ thống}
+
+Hệ thống áp dụng bốn lớp bảo vệ độc lập nhằm giảm nguy cơ truy cập trái phép, bảo vệ dữ liệu người dùng, ngăn lạm dụng tài nguyên và hạn chế các hình thức tấn công cơ bản như brute force, spam request hoặc gửi code độc hại.
+
+\subsection{Xác thực JWT}
+
+Hệ thống dùng JWT làm cơ chế xác thực chính. Sau khi đăng nhập hoặc đăng ký thành công, backend sinh hai loại token. Access token có thời hạn 24 giờ, dùng cho các request thông thường đến API. Refresh token có thời hạn 7 ngày, dùng để cấp lại access token mới khi hết hạn mà không bắt người dùng đăng nhập lại. JWT được ký bằng secret lấy từ biến môi trường JWT\_SECRET, payload chứa các thông tin định danh tối thiểu gồm userId, email và role. Access token được lưu vào cookie tên access\_token với thuộc tính httpOnly và secure khi chạy ở môi trường production.
+
+Luồng xác thực diễn ra như sau: người dùng gửi email và mật khẩu, backend kiểm tra thông tin và nếu hợp lệ trả về cả hai token. Frontend lưu access token và dùng cho các request về sau. Khi access token hết hạn, client gọi endpoint refresh để lấy token mới. Middleware authenticate kiểm tra tính hợp lệ của token trước khi cho phép truy cập các route được bảo vệ như quản lý bài học, bài tập, tiến độ và chat AI.
+
+Việc tách thành hai loại token giúp cân bằng giữa bảo mật và trải nghiệm sử dụng. Access token ngắn hạn giảm rủi ro nếu token bị lộ, trong khi refresh token dài hạn tránh việc người dùng phải đăng nhập lại liên tục.
+
+\subsection{Mã hóa mật khẩu}
+
+Mật khẩu người dùng không được lưu dưới dạng văn bản thuần mà được băm bằng bcrypt trước khi ghi vào cơ sở dữ liệu. Khi đăng ký, mật khẩu được xử lý qua bcrypt.hash() với salt rounds = 12, kết quả hash được lưu vào cột passwordHash. Khi đăng nhập, hệ thống dùng bcrypt.compare() để so khớp mật khẩu người dùng nhập vào với chuỗi hash đã lưu, mà không cần giải mã ngược.
+
+Bcrypt là hàm băm một chiều có tích hợp salt riêng cho từng mật khẩu, vì vậy hai người dùng có cùng mật khẩu sẽ cho ra hai chuỗi hash khác nhau. Điều này làm giảm hiệu quả của các cuộc tấn công dùng bảng tra cứu sẵn. Mức salt rounds = 12 làm tăng chi phí tính toán cho mỗi lần băm, từ đó làm chậm brute force offline, đồng thời vẫn không gây chậm đáng kể cho các thao tác đăng ký hoặc đổi mật khẩu trong điều kiện bình thường.
+
+\subsection{Cô lập môi trường chạy code}
+
+Code của sinh viên được thực thi trong container Docker riêng biệt thay vì chạy trực tiếp trên máy chủ ứng dụng. Backend dùng Dockerode để tạo container theo từng ngôn ngữ lập trình, nạp mã nguồn và test case vào container dưới dạng archive, thực thi kiểm tra rồi xóa container sau khi chạy xong. Image được chọn theo ngôn ngữ: node:20-alpine cho JavaScript, python:3.11-alpine cho Python, gcc:13 cho C++ và openjdk:21-slim cho Java.
+
+Môi trường sandbox được cô lập theo ba chiều. Về mạng, container được đặt NetworkMode: 'none' nên không có quyền truy cập internet hay mạng nội bộ. Về tài nguyên, bộ nhớ bị giới hạn ở 128 MB và CPU ở mức 50\% một nhân với CpuQuota: 50000 và CpuPeriod: 100000. Về thời gian, mỗi lần chạy có timeout 10 giây, vượt quá giới hạn này thì kết quả được tính là thất bại. Sau khi chạy xong, container bị xóa ngay bằng remove({ force: true }) để tránh tồn đọng tài nguyên.
+
+Cách kiểm tra code được thiết kế theo mô hình wrapper: với JavaScript và Python, hệ thống bọc code trong chương trình chạy hàm solve; với C++ và Java, hệ thống sinh file nguồn tạm, biên dịch rồi chạy qua shell script. Test case được đưa vào theo từng bộ input và expected output để so sánh kết quả tự động.
+
+Cơ chế này đảm bảo code lỗi hoặc code độc hại từ phía sinh viên không thể ảnh hưởng đến hoạt động của backend chính, không thể truy cập mạng bên ngoài và không thể chiếm tài nguyên hệ thống quá mức cho phép.
+
+\subsection{Giới hạn tần suất request}
+
+Hệ thống sử dụng @fastify/rate-limit để giới hạn tối đa 100 request mỗi phút cho mỗi client, áp dụng ở tầng server cho toàn bộ request đến backend. Cơ chế này làm chậm brute force vào các endpoint đăng nhập và refresh token, giảm spam request vào API chat và submit code, đồng thời tránh việc một client chiếm quá nhiều tài nguyên server trong thời gian ngắn.
+
+Redis đã được tích hợp vào hệ thống và phục vụ các tác vụ lưu trạng thái dùng chung như session và cache dữ liệu. Trong cấu hình hiện tại, rate limiting hoạt động ở tầng Fastify và Redis đóng vai trò hạ tầng sẵn sàng để mở rộng rate limiting đồng bộ giữa nhiều instance nếu hệ thống cần scale out trong tương lai.
+
+\section{Tính năng AI Chatbot cá nhân hóa}
+
+\subsection{Ghi nhớ lịch sử và cá nhân hóa theo hồ sơ học tập}
+
+Khác với các công cụ AI thông thường như ChatGPT, mỗi cuộc hội thoại trong PPAT được lưu trữ vĩnh viễn và hiển thị ở sidebar bên trái, cho phép sinh viên quay lại xem lại bất kỳ phiên hỗ trợ nào trước đó. Hệ thống không chỉ lưu lịch sử mà còn liên tục cập nhật knowledge log bao gồm trình độ hiện tại, các chủ đề đã nắm, lỗi thường gặp và tiến độ hoàn thành bài tập sau mỗi lần tương tác.
+
+Điểm then chốt của cơ chế cá nhân hóa là dynamic system prompt: trước mỗi lần gọi GPT-4o, hệ thống truy vấn bảng user\_analytics để lấy dữ liệu hồ sơ học tập của sinh viên, sau đó ghép vào system prompt động. Nhờ vậy, AI luôn có đầy đủ ngữ cảnh về người học trước khi sinh phản hồi.
+
+Hình 4.1 minh họa kết quả thực tế: khi sinh viên hỏi "hãy nói về hồ sơ năng lực của tôi", AI trả lời chính xác rằng sinh viên đang ở cấp độ bắt đầu, học Python, đã quen với biến kiểu dữ liệu hàm, hoàn thành 6 bài tập và 1 bài học trong tổng số 50, đồng thời chủ động nhắc đến lỗi runtime\_error mà sinh viên hay mắc phải. Toàn bộ thông tin này được đọc trực tiếp từ knowledge log, không phải do sinh viên khai báo trong cuộc hội thoại đó.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{ai_tutor_tom_tat_ho_so_nang_luc_ca_nhan_cua_sinh_vien.png}
+\caption{AI Tutor tóm tắt hồ sơ năng lực cá nhân của sinh viên}
+\label{fig:ai-tutor-tom-tat-ho-so-nang-luc-ca-nhan-cua-sinh-vien}
+\end{figure}
+
+\subsection{Phân tích lỗi code và gợi ý debug theo phương pháp Socratic}
+
+Khi sinh viên nộp bài và không đạt, hệ thống tự động gửi thông tin lỗi từ code runner bao gồm loại lỗi, test case thất bại, giá trị expected và giá trị thực tế vào cuộc hội thoại với AI Tutor. AI không đưa ra đáp án trực tiếp mà áp dụng phương pháp Socratic: phân tích nguyên nhân gốc rễ, sau đó đặt câu hỏi dẫn dắt để sinh viên tự tìm ra hướng sửa.
+
+Hình 4.2 thể hiện một tình huống cụ thể: sinh viên submit hàm solve(n) với nội dung return 0, hệ thống phát hiện FAILED\_CASE: Sai test case 1: expected=4, got=0. AI xác định ngay rằng hàm nhận đúng tham số n nhưng luôn trả về 0 thay vì tính toán. Thay vì viết ra return n \\\* 2, AI đặt câu hỏi gợi ý: "Bạn có thể dùng biểu thức nào để biểu diễn n nhân với 2?" buộc sinh viên phải tư duy và tự hoàn thiện logic. Giao diện tab "Trợ giảng AI" tích hợp ngay trong màn hình bài tập, bên cạnh Monaco Editor và terminal, giúp sinh viên không cần chuyển tab khi cần hỗ trợ.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{ai_tutor_phan_tich_loi_va_dan_dat_sinh_vien_sua_tung_buoc.png}
+\caption{AI Tutor phân tích lỗi và dẫn dắt sinh viên sửa từng bước}
+\label{fig:ai-tutor-phan-tich-loi-va-dan-dat-sinh-vien-sua-tung-buoc}
+\end{figure}
+
+\subsection{Điều chỉnh độ khó và lộ trình học theo performance}
+
+Hệ thống theo dõi liên tục kết quả nộp bài của sinh viên và tự động điều chỉnh phản hồi theo từng mức độ, thay vì xử lý đồng nhất mọi trường hợp.
+
+Gợi ý bài tiếp theo sau khi hoàn thành. Khi sinh viên hoàn thành toàn bộ bài tập của một bài học (ảnh 1 "Hoàn thành 4/4 bài tập", tiến độ 100\%), hệ thống hiển thị nút "Bài tiếp theo" và điều hướng sang bài học kế tiếp được gợi ý bằng LLM dựa trên profile của sinh viên, phù hợp với lộ trình. Sidebar bài học cũng hiển thị "Bài tiếp theo: Bài học 7 Xử lý chuỗi (PYTHON)", phản ánh lộ trình được sắp xếp theo trình độ từ cơ sở đến nâng cao.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{he_thong_goi_y_bai_tiep_theo_sau_khi_hoan_thanh_44_bai_tap.png}
+\caption{Hệ thống gợi ý bài tiếp theo sau khi hoàn thành 4/4 bài tập}
+\label{fig:he-thong-goi-y-bai-tiep-theo-sau-khi-hoan-thanh-44-bai-tap}
+\end{figure}
+
+Tự động kích hoạt Gia sư AI khi phát hiện lỗi. Khi sinh viên nộp bài không đạt lần đầu, hệ thống tự động chuyển sang tab Gia sư AI và gửi thông tin lỗi vào cuộc hội thoại sinh viên không cần mô tả lại vấn đề. Ở lần fail đầu, AI áp dụng phương pháp Socratic: đặt câu hỏi từng bước nhỏ để dẫn dắt sinh viên tự tìm hướng sửa, chưa tiết lộ đáp án (ảnh 2 "Bước 1: Bạn có hiểu rõ cách nhân số nguyên n với 2 không?").
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{ai_dan_dat_socratic_o_lan_fail_dau_tien.png}
+\caption{AI dẫn dắt Socratic ở lần fail đầu tiên}
+\label{fig:ai-dan-dat-socratic-o-lan-fail-dau-tien}
+\end{figure}
+
+Tăng mức gợi ý khi fail lần thứ hai và hiển thị gợi ý từ hệ thống. Nếu sinh viên vẫn không vượt qua sau lần thứ hai, AI chuyển sang cung cấp hướng dẫn cụ thể hơn: liệt kê các bước thực hiện rõ ràng, hiển thị code mẫu minh họa và dự đoán kết quả test case (ảnh 3 "Dưới đây là các bước cụ thể... return n \* 2... solve(2) sẽ trả về 4").
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{ai_cung_cap_huong_dan_chi_tiet_va_code_mau_o_lan_fail_thu_hai.png}
+\caption{AI cung cấp hướng dẫn chi tiết và code mẫu ở lần fail thứ hai}
+\label{fig:ai-cung-cap-huong-dan-chi-tiet-va-code-mau-o-lan-fail-thu-hai}
+\end{figure}
+
+Yêu cầu ôn lại lý thuyết khi fail nhiều lần. Ở lần fail thứ ba trở đi, terminal hiển thị cảnh báo "Hệ thống gợi ý ôn lý thuyết trước → Xem bài học" kèm link điều hướng trực tiếp về bài học liên quan (ảnh 4). Đây là cơ chế phát hiện lỗ hổng kiến thức: thay vì tiếp tục sửa code bề mặt, hệ thống xác định sinh viên cần củng cố nền tảng lý thuyết trước khi quay lại bài tập.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{he_thong_yeu_cau_on_lai_bai_hoc_sau_nhieu_lan_fail_lien_tiep.png}
+\caption{Hệ thống yêu cầu ôn lại bài học sau nhiều lần fail liên tiếp}
+\label{fig:he-thong-yeu-cau-on-lai-bai-hoc-sau-nhieu-lan-fail-lien-tiep}
+\end{figure}
+
+Bốn mức phản hồi này hoàn thành mở bài mới, Socratic lần một, hướng dẫn chi tiết lần hai, redirect lý thuyết lần ba tạo thành cơ chế adaptive learning tự động, không cần giảng viên can thiệp thủ công.
+
+\section{Dữ liệu thử nghiệm}
+
+Dữ liệu thử nghiệm được tạo tự động thông qua script seed.ts đặt tại \texttt{apps/be/scripts/seed.ts}, chạy bằng lệnh:
+
+\begin{itemize}
+    \item pnpm db:seed
+\end{itemize}
+
+Script thực hiện insert toàn bộ dữ liệu vào PostgreSQL và xuất báo cáo kết quả tại thời điểm chạy (25/05/2026). Kết quả seed thực tế khớp hoàn toàn với yêu cầu PI 4.2:
+
+
+{
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{|X|p{2.0cm}|p{2.0cm}|}
+\caption{Tổng hợp kết quả dữ liệu thử nghiệm}
+\label{tab:tong-hop-ket-qua-du-lieu-thu-nghiem}
+\\
+\hline
+\textbf{Hạng mục} & \textbf{Yêu cầu} & \textbf{Thực tế} \\
+\hline
+Tổng người dùng & 100 & 100 \\
+\hline
+Beginner (student1 - 40) & 40 & 40 \\
+\hline
+Intermediate (student41 - 80) & 40 & 40 \\
+\hline
+Advanced (student81 - 100) & 20 & 20 \\
+\hline
+Tổng bài học & 50 & 50 \\
+\hline
+Tổng bài tập & 200 & 200 \\
+\hline
+Bài tập Easy & 80 & 80 \\
+\hline
+Bài tập Medium & 80 & 80 \\
+\hline
+Bài tập Hard & 40 & 40 \\
+\hline
+Bài tập có test cases rỗng & 0 & 0 \\
+\hline
+\end{tabularx}
+}
+
+
+{
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{|p{2.0cm}|p{2.0cm}|X|}
+\caption{Phân bổ bài học theo ngôn ngữ}
+\label{tab:phan-bo-bai-hoc-theo-ngon-ngu}
+\\
+\hline
+\textbf{Ngôn ngữ} & \textbf{Số bài học} & \textbf{Chủ đề tiêu biểu} \\
+\hline
+Python & 13 & Biến, điều kiện, vòng lặp, hàm, OOP, đệ quy, exception \\
+\hline
+JavaScript & 13 & Variables, arrow function, array methods, async/await, DOM \\
+\hline
+C++ & 12 & Con trỏ, mảng, struct, STL vector/map, xử lý file \\
+\hline
+Java & 12 & Class, inheritance, interface, collections, exception \\
+\hline
+\end{tabularx}
+}
+
+Mỗi bài tập được gắn với một bài học cụ thể, có đủ starter code, expected output và ít nhất 3 test cases (basic, edge case, large input). Mật khẩu tất cả tài khoản thử nghiệm được hash bcrypt trong DB, không lưu plaintext.
+
+\section{Kiểm thử hệ thống}
+
+\subsection{Unit Test}
+
+Hệ thống có hai bộ unit test độc lập, kiểm tra các module không phụ thuộc vào network hay database.
+
+Bộ 1 - CodeRunnerService: Kiểm tra module thực thi code trong Docker container với 3 tình huống: chạy JavaScript, chạy Python và xử lý vòng lặp vô hạn (timeout 10 giây). Thời gian TC-U03 cao do cơ chế chờ đủ 10 giây trước khi kill container, đúng với thiết kế sandbox cô lập.
+
+Bộ 2 - LessonsService (LLM Parser): Kiểm tra logic parse JSON từ phản hồi GPT-4o. Do LLM đôi khi trả về JSON lẫn trong đoạn văn bản tự nhiên, hàm parseLessonRecommendation() cần trích xuất đúng JSON dù có text rác xung quanh. TC-U04 kiểm tra trường hợp thành công, TC-U05 kiểm tra trường hợp LLM không tạo ra JSON hợp lệ thì trả về null.
+
+
+{
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{|p{2.0cm}|p{4cm}|X|p{2.0cm}|p{2.0cm}|}
+\caption{Kết quả Unit Test}
+\label{tab:ket-qua-unit-test}
+\\
+\hline
+\textbf{Test case} & \textbf{Module} & \textbf{Mô tả} & \textbf{Kết quả} & \textbf{Thời gian} \\
+\hline
+TC-U01 & CodeRunnerService & Chạy JavaScript trong container & Pass & 403ms \\
+\hline
+TC-U02 & CodeRunnerService & Chạy Python trong container & Pass & 434ms \\
+\hline
+TC-U03 & CodeRunnerService & Xử lý timeout vòng lặp vô hạn & Pass & 10.308ms \\
+\hline
+TC-U04 & LessonsService & Parse JSON từ LLM có text rác xung quanh & Pass & 2ms \\
+\hline
+TC-U05 & LessonsService & Trả về null khi LLM không sinh JSON hợp lệ & Pass & 0ms \\
+\hline
+\end{tabularx}
+}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{ket_qua_chay_unit_test_tren_terminal.png}
+\caption{Kết quả chạy Unit Test trên terminal}
+\label{fig:ket-qua-chay-unit-test-tren-terminal}
+\end{figure}
+
+\subsection{Integration Test}
+
+Integration test kiểm tra toàn bộ luồng API thực tế trên môi trường dev đang chạy, bao gồm Fastify, PostgreSQL và Redis. 10 test case được tổ chức theo 5 nhóm endpoint, mỗi test case xác nhận HTTP status code, cấu trúc response và thời gian phản hồi dưới 200ms.
+
+
+{
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{|p{2.0cm}|p{2.0cm}|X|p{2.0cm}|p{2.0cm}|}
+\caption{Kết quả Integration Test}
+\label{tab:ket-qua-integration-test}
+\\
+\hline
+\textbf{Nhóm} & \textbf{Test case} & \textbf{Mô tả} & \textbf{Kết quả} & \textbf{Thời gian} \\
+\hline
+Health & TC-I01 & GET /health trả về status 200 & Pass & 28ms \\
+\hline
+Auth & TC-I02 & Đăng ký email trùng trả về 409 & Pass & 14ms \\
+\hline
+Auth & TC-I03 & Đăng nhập đúng trả về accessToken & Pass & 105ms \\
+\hline
+Auth & TC-I04 & Đăng nhập sai mật khẩu trả về 401 & Pass & 109ms \\
+\hline
+Auth & TC-I05 & Gọi API không có token trả về 401 & Pass & 2ms \\
+\hline
+Lessons & TC-I06 & GET /\allowbreak api/\allowbreak lessons trả về danh sách & Pass & 137ms \\
+\hline
+Lessons & TC-I07 & GET /\allowbreak api/\allowbreak lessons/\allowbreak :id trả về chi tiết & Pass & 120ms \\
+\hline
+Exercises & TC-I08 & GET /\allowbreak api/\allowbreak exercises/\allowbreak :id trả về chi tiết & Pass & 113ms \\
+\hline
+Progress & TC-I09 & GET /\allowbreak api/\allowbreak progress/\allowbreak me trả về tiến độ & Pass & 113ms \\
+\hline
+Analytics & TC-I10 & GET /\allowbreak api/\allowbreak analytics/\allowbreak me trả về knowledge log & Pass & 118ms \\
+\hline
+\end{tabularx}
+}
+
+Tất cả 10 test case đều pass, thời gian phản hồi từ 2ms đến 137ms, đáp ứng yêu cầu phi chức năng dưới 200ms. Tổng: 10/10 passed, 0 failed.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{ket_qua_chay_integration_test_tren_terminal.png}
+\caption{Kết quả chạy Integration Test trên terminal}
+\label{fig:ket-qua-chay-integration-test-tren-terminal}
+\end{figure}
+
+\subsection{Performance Test}
+
+Performance test mô phỏng 50 người dùng đồng thời gửi request liên tục trong 30 giây đến 4 endpoint thực tế: /health, /\allowbreak api/\allowbreak lessons, /\allowbreak api/\allowbreak progress/\allowbreak me và /\allowbreak api/\allowbreak analytics/\allowbreak me. Token xác thực được lấy một lần trong hàm setup() và dùng chung cho toàn bộ virtual users nhằm tập trung đo hiệu năng xử lý dữ liệu thay vì chi phí đăng nhập. Công cụ sử dụng là k6, chạy trực tiếp trên môi trường MacBook Air M3.
+
+Kết quả được lấy từ lần chạy có điều kiện tải ổn định nhất trong 4 lần thử nghiệm.
+
+
+{
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{|X|p{3.5cm}|p{3.5cm}|p{2.0cm}|}
+\caption{Kết quả Performance Test (50 VUs, 30 giây)}
+\label{tab:ket-qua-performance-test-50-vus-30-giay}
+\\
+\hline
+\textbf{Chỉ số} & \textbf{Giá trị} & \textbf{Ngưỡng yêu cầu} & \textbf{Đạt yêu cầu} \\
+\hline
+p(95) response time & 80.66ms & Dưới 200ms & Đạt \\
+\hline
+Response time trung bình & 28.8ms & Không quy định & Ghi nhận \\
+\hline
+Response time trung vị & 18.91ms & Không quy định & Ghi nhận \\
+\hline
+Response time tối đa & 428.23ms & Không quy định & Ghi nhận \\
+\hline
+Tỷ lệ lỗi HTTP & 0.00\% & Dưới 1\% & Đạt \\
+\hline
+Tổng requests thực hiện & 5.477 requests & Không quy định & Ghi nhận \\
+\hline
+Throughput & 174.07 req/s & Không quy định & Ghi nhận \\
+\hline
+Checks passed & 8.215/8.215 (100\%) & 1 & Đạt \\
+\hline
+\end{tabularx}
+}
+
+95\% request hoàn thành trong 80.66ms, thấp hơn 2.5 lần so với ngưỡng 200ms yêu cầu. Response time tối đa 428ms xảy ra ở một số request đầu tiên do cold start của connection pool, không ảnh hưởng đến p(95). Tỷ lệ lỗi HTTP duy trì 0\% trong suốt 1.369 iterations, xác nhận hệ thống ổn định dưới tải 50 người dùng đồng thời.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.0\textwidth]{ket_qua_chay_performance_test_voi_k6_tren_terminal.png}
+\caption{Kết quả chạy Performance Test với k6 trên terminal}
+\label{fig:ket-qua-chay-performance-test-voi-k6-tren-terminal}
+\end{figure}
+
+\subsection{Tổng kết kiểm thử}
+
+
+{
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{|p{3.5cm}|X|p{2.0cm}|p{2.0cm}|p{2.0cm}|}
+\caption{Tổng hợp kết quả kiểm thử}
+\label{tab:tong-hop-ket-qua-kiem-thu}
+\\
+\hline
+\textbf{Loại test} & \textbf{File} & \textbf{Số test case} & \textbf{Passed} & \textbf{Failed} \\
+\hline
+Unit Test & code-runner.test.ts & 3 & 3 & 0 \\
+\hline
+Unit Test & lessons.service.test.ts & 2 & 2 & 0 \\
+\hline
+Integration Test & integration.test.ts & 10 & 10 & 0 \\
+\hline
+Performance Test & k6-test.js & 7 checks & 7 & 0 \\
+\hline
+Tổng cộng & 4 file & 22 & 22 & 0 \\
+\hline
+\end{tabularx}
+}
+
+\section{Tài liệu hướng dẫn sử dụng}
+
+\subsection{Hướng dẫn cài đặt và khởi động hệ thống}
+
+Yêu cầu môi trường: Docker Desktop đang chạy, Node.js 20 trở lên, pnpm và OpenAI API key hợp lệ.
+
+\textbf{Các bước khởi động:}
+
+\begin{itemize}
+    \item Clone repository về máy và di chuyển vào thư mục dự án.
+    \item Sao chép file cấu hình môi trường: cp apps/be/.env.example apps/be/.env và điền OPENAI\_API\_KEY, RESEND\_API\_KEY cùng các biến còn lại vào file .env.
+    \item Khởi động PostgreSQL và Redis bằng Docker Compose: docker compose up -d db cache.
+    \item Cài đặt dependencies từ thư mục gốc: pnpm install.
+    \item Chạy migration database: pnpm db:migrate.
+    \item Seed dữ liệu thử nghiệm: pnpm db:seed.
+    \item Khởi động toàn bộ hệ thống từ thư mục gốc: pnpm dev. Backend Fastify khởi động trên cổng 3001, frontend Next.js khởi động trên cổng 3000.
+    \item Truy cập hệ thống tại <http://localhost:3000>.
+\end{itemize}
+
+\subsection{Hướng dẫn dành cho sinh viên}
+
+Bước 1 - Đăng ký tài khoản: Sinh viên truy cập hệ thống và chọn "Đăng ký". Điền đầy đủ tên hiển thị, email, mật khẩu và chọn trình độ ban đầu phù hợp (Mới bắt đầu, Trung bình hoặc Nâng cao). Trình độ ban đầu được dùng để khởi tạo knowledge log và định hướng lộ trình học từ phiên đầu tiên.
+
+Bước 2 - Xem danh sách bài học: Sau khi đăng nhập, sinh viên vào mục "Danh sách bài học" để xem toàn bộ bài học theo ngôn ngữ lập trình (Python, JavaScript, C++, Java) và mức độ khó. Mỗi bài học hiển thị tiến độ hoàn thành và số bài tập đã làm.
+
+Bước 3 - Học lý thuyết và làm bài tập: Sinh viên chọn bài học để đọc lý thuyết, sau đó chuyển sang danh sách bài tập đính kèm. Giao diện bài tập chia làm hai phần: đề bài bên trái và Monaco Editor bên phải. Sinh viên viết code vào editor và nhấn "Nộp bài" để chạy test cases. Terminal phía dưới hiển thị kết quả từng test case cùng thông báo pass hoặc fail.
+
+Bước 4 - Sử dụng Gia sư AI: Khi gặp khó khăn, sinh viên chuyển sang tab "Gia sư AI" ngay trong màn hình bài tập để được hỗ trợ theo ngữ cảnh bài đang làm. Sinh viên cũng có thể vào mục "Đoạn chat mới" ở sidebar để bắt đầu cuộc hội thoại độc lập về bất kỳ chủ đề lập trình nào. AI Tutor tự động nhận biết trình độ và lỗi thường gặp từ knowledge log mà không cần sinh viên tự giới thiệu lại. Khi nộp bài sai, hệ thống tự động gửi thông tin lỗi vào cuộc hội thoại để AI phân tích và dẫn dắt sửa lỗi.
+
+Bước 5 - Theo dõi tiến độ: Sinh viên vào mục "Bảng điều khiển" để xem tổng quan tiến độ học tập, bao gồm số bài học và bài tập đã hoàn thành, các lỗi thường gặp và lộ trình bài học được gợi ý tiếp theo dựa trên knowledge log hiện tại.
+
+\subsection{Hướng dẫn dành cho Admin}
+
+Bước 1 - Đăng nhập tài khoản Admin: Tài khoản admin mặc định được tạo sẵn với thông tin đăng nhập: email <admin@gmail.com>, mật khẩu 111111. Sau khi đăng nhập lần đầu, admin nên đổi mật khẩu trong phần cài đặt tài khoản.
+
+Bước 2 - Quản lý người dùng: Admin vào mục quản lý người dùng để xem danh sách tài khoản, kiểm tra trình độ và trạng thái hoạt động của từng sinh viên.
+
+Bước 3 - Quản lý bài học: Admin tạo mới, chỉnh sửa hoặc xóa bài học. Mỗi bài học cần điền tiêu đề, ngôn ngữ lập trình, chủ đề, mức độ khó và nội dung lý thuyết định dạng Markdown.
+
+Bước 4 - Quản lý bài tập và test cases: Admin tạo bài tập gắn với bài học tương ứng, bao gồm đề bài, starter code, expected output và danh sách test cases. Mỗi bài tập cần có ít nhất 3 test cases gồm basic, edge case và large input để đảm bảo chất lượng kiểm tra.
+
+\section{Kết quả và Đánh giá}
+
+\subsection{Chức năng hoàn thành}
+
+
+{
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{|p{2.0cm}|p{3.5cm}|X|p{3.5cm}|}
+\caption{Checklist thi công các Use Case theo yêu cầu PI}
+\label{tab:checklist-thi-cong-cac-use-case-theo-yeu-cau-pi}
+\\
+\hline
+\textbf{Use Case} & \textbf{Yêu cầu PI} & \textbf{Nội dung} & \textbf{Trạng thái} \\
+\hline
+UC01 & PI 3.3 & Quản lý người dùng: đăng ký, đăng nhập, cập nhật profile & Hoàn thành \\
+\hline
+UC02 & PI 3.3 & Quản lý bài học: xem danh sách, xem chi tiết, lọc theo chủ đề & Hoàn thành \\
+\hline
+UC03 & PI 3.3 & Quản lý bài tập: xem bài tập, submit code, kiểm tra kết quả & Hoàn thành \\
+\hline
+UC04 & PI 3.3 & Tương tác chat với Gia sư AI: gửi tin nhắn, nhận hướng dẫn, lưu lịch sử & Hoàn thành \\
+\hline
+UC05 & PI 3.3 & Theo dõi tiến độ: xem thống kê, phân tích điểm yếu & Hoàn thành \\
+\hline
+PI 3.4 & PI 3.4 & Tích hợp OpenAI GPT-4o, ghi nhớ lịch sử, điều chỉnh độ khó, phân tích lỗi code & Hoàn thành \\
+\hline
+PI 4.1 & PI 4.1 & Triển khai Docker Compose với Fastify, PostgreSQL, Redis & Hoàn thành \\
+\hline
+PI 4.2 & PI 4.2 & Dữ liệu thử nghiệm: 100 users, 50 bài học, 200 bài tập & Hoàn thành \\
+\hline
+\end{tabularx}
+}
+
+\subsection{Ưu điểm}
+
+Cá nhân hóa phản hồi dựa trên knowledge log. Đây là điểm khác biệt cốt lõi so với các công cụ AI thông thường. Thay vì trả lời theo từng câu hỏi đơn lẻ, hệ thống theo dõi toàn bộ hành trình học tập của sinh viên và điều chỉnh từng phản hồi phù hợp với trình độ, lỗi đã mắc và tốc độ tiến bộ của từng cá nhân. Kết quả thực tế được minh họa qua 3 sinh viên cùng đặt một câu hỏi nhưng nhận được 3 phản hồi hoàn toàn khác nhau.
+
+Gợi ý bài học thông minh bằng LLM. Hệ thống không chỉ gợi ý bài tiếp theo theo thứ tự cố định mà sử dụng GPT-4o để phân tích hồ sơ học tập và đề xuất bài học phù hợp nhất với trình độ và lỗ hổng kiến thức hiện tại của từng sinh viên.
+
+Tích hợp Gia sư AI trực tiếp trong trình soạn thảo code. Sinh viên không cần chuyển sang công cụ khác khi cần hỗ trợ. Tab Gia sư AI nằm ngay cạnh Monaco Editor, khi nộp bài sai hệ thống tự động đẩy thông tin lỗi vào cuộc hội thoại và AI phân tích ngay lập tức. Trải nghiệm này tương tự một IDE thông minh có trợ lý tích hợp sẵn.
+
+Code runner đa ngôn ngữ trong sandbox cô lập. Hệ thống hỗ trợ thực thi code Python, JavaScript, C++ và Java trực tiếp trên trình duyệt thông qua Docker container với timeout 10 giây và không có network access. Sinh viên học lý thuyết và thực hành trong cùng một môi trường mà không cần cài đặt IDE hay compiler trên máy cá nhân.
+
+Kiến trúc SOA dễ mở rộng. Bốn service độc lập (Frontend Next.js, Backend Fastify, PostgreSQL, Redis) chạy trong Docker Compose, cho phép thêm service mới như analytics nâng cao hay multi-agent AI mà không ảnh hưởng đến các thành phần hiện có.
+
+Hiệu năng đáp ứng yêu cầu phi chức năng. Kết quả kiểm thử thực tế cho thấy p(95) response time đạt 80.66ms với 50 người dùng đồng thời, thấp hơn 2.5 lần so với ngưỡng 200ms yêu cầu. Tỷ lệ lỗi duy trì 0\% trong toàn bộ quá trình kiểm thử.
+
+\subsection{Hạn chế}
+
+Phụ thuộc vào OpenAI API. Chi phí token tăng tuyến tính theo số lượng người dùng và độ dài hội thoại. Trong môi trường triển khai thực tế với hàng trăm sinh viên đồng thời, chi phí vận hành có thể trở thành rào cản đáng kể.
+
+Chưa có mobile app. Hệ thống hiện tại chỉ hỗ trợ trình duyệt web. Monaco Editor và giao diện code runner chưa được tối ưu cho màn hình nhỏ, ảnh hưởng đến trải nghiệm code trực tiếp trên thiết bị di động.
+
+Chưa tích hợp LMS của trường. Hệ thống hoạt động độc lập, chưa kết nối với hệ thống quản lý học tập của nhà trường nên điểm số và tiến độ không được đồng bộ với hồ sơ học tập chính thức.
+
+Knowledge log phụ thuộc vào dữ liệu tương tác. Với sinh viên mới đăng ký, knowledge log còn ít dữ liệu nên chất lượng cá nhân hóa trong các phiên đầu tiên chưa cao, cần tích lũy thêm tương tác để AI hiểu chính xác hơn về người học.
+
+\subsection{Hướng phát triển}
+
+Fine-tuning model cho tiếng Việt và lập trình. GPT-4o hiện tại hoạt động tốt nhưng chưa được tối ưu cho ngữ cảnh giảng dạy lập trình bằng tiếng Việt. Một model được fine-tune trên dữ liệu hội thoại thực tế của sinh viên Việt Nam sẽ cho phản hồi tự nhiên và chính xác hơn đồng thời giảm chi phí API.
+
+Tích hợp RAG với tài liệu của trường. Sử dụng Retrieval-Augmented Generation để AI có thể tham chiếu trực tiếp giáo trình, đề cương và tài liệu nội bộ của trường, giúp phản hồi bám sát chương trình học chính thức hơn.
+
+Multi-agent AI. Thay vì một AI duy nhất xử lý tất cả, kiến trúc multi-agent gồm AI Tutor hướng dẫn lý thuyết, AI Reviewer chấm và nhận xét code, và AI Exercise Generator tự động sinh bài tập mới phù hợp với trình độ từng sinh viên.
+
+Nhận diện trạng thái cảm xúc. Tích hợp phân tích cảm xúc từ hành vi tương tác như thời gian phản hồi, tần suất thử lại và ngôn ngữ sử dụng để AI điều chỉnh cách dạy phù hợp hơn khi sinh viên đang căng thẳng hoặc mất động lực.
+
+Tích hợp LMS của trường. Kết nối với hệ thống quản lý học tập của nhà trường để đồng bộ điểm số, tiến độ và lịch học, giúp giảng viên theo dõi toàn diện hơn mà không cần chuyển đổi giữa nhiều hệ thống.
+
+
+\end{document}

@@ -34,19 +34,9 @@
 % \usepackage{natbib}							% Dùng cho tài liệu tham khảo
 % \setcitestyle{super}								% Ký hiệu tài liệu tham khảo dạng superscript
 \usepackage{url}									% Dùng cho URL
-\usepackage{longtable}	
-
-\usepackage{listings}
-\usepackage{microtype}
-\usepackage{xurl}
-% Tự động áp dụng cơ chế ngắt dòng của url vào trong tất cả các lệnh \texttt
-\let\oldtexttt\texttt
-\renewcommand{\texttt}[1]{\oldtexttt{\urlstyle{tt}\url{#1}}}
-
+\usepackage{longtable}								% Dùng cho các bảng dài, nhiều trang
 \usepackage{ltablex}
-
-\keepXColumns			% Dùng cho các bảng dài, nhiều trang
-
+\keepXColumns
 \usepackage{amsmath,amssymb,amsfonts}			% Dùng để chèn các công thức Toán
 \usepackage{makecell}								% Dùng để làm nổi bật header của bảng
 \usepackage{float}								% Dùng để thiết đặt thuộc tính H (here) cho ảnh
@@ -111,7 +101,9 @@ citestyle = numeric
 ]{hyperref}                     % Hiển thị màu liên kết cho mục lục, bảng, hình
 
 
-\usepackage{setspace} \onehalfspacing
+\usepackage{setspace}
+\setstretch{1.15} % Gian dong trong paragraph
+\setlist[itemize,enumerate]{before=\setstretch{1.15}, itemsep=0pt, parsep=0pt, partopsep=0pt} % Gian dong trong bullet/list
 \usepackage{titlesec}
 
 \titlelabel{\thetitle.\quad}   % Thêm dâu chấm sau mỗi section number và subsection number.
@@ -120,13 +112,16 @@ citestyle = numeric
 %     {\normalfont\huge\bfseries\centering}{\MakeUppercase{\chaptertitlename}\ \thechapter}{26pt}{\huge}
 
 \titleformat{\chapter}[display]{\fontsize{16pt}{16pt}\bfseries\centering}{\MakeUppercase{\chaptertitlename}\ \thechapter}{5pt}{}
-\titlespacing*{\chapter}{0pt}{0pt}{6pt}
+\titlespacing*{\chapter}{0pt}{0pt}{4pt}
 
 \setcounter{secnumdepth}{4}
 
 \sectionfont{\fontsize{13}{15}\selectfont}
 \subsectionfont{\fontsize{13}{15}\selectfont\itshape}
 \subsubsectionfont{\fontsize{13}{15}\selectfont\itshape}
+\titlespacing*{\section}{0pt}{6pt plus 1pt minus 1pt}{3pt}
+\titlespacing*{\subsection}{0pt}{5pt plus 1pt minus 1pt}{2pt}
+\titlespacing*{\subsubsection}{0pt}{4pt plus 1pt minus 1pt}{2pt}
 
 \usepackage{indentfirst}                        % Thụt đầu dòng theo tabindent
 % \titlespacing*{\section}                        % định dạng dãn dòng cho section và subsection
@@ -150,27 +145,15 @@ citestyle = numeric
 \author{Lưu Sỹ Trường}
 
 % Header và footer 
-%\pagestyle{fancy}
-%\fancyhf{}
-%\chead{\thepage}
-%\renewcommand{\headrulewidth}{0pt}
-%
-%\fancypagestyle{plain}{%
-%\fancyhf{}
-%\chead{\thepage}
-%\renewcommand{\headrulewidth}{0pt}
-%}
 \pagestyle{fancy}
 \fancyhf{}
-\cfoot{\thepage}
+\chead{\thepage}
 \renewcommand{\headrulewidth}{0pt}
-\renewcommand{\footrulewidth}{0pt}
 
 \fancypagestyle{plain}{%
-	\fancyhf{}
-	\cfoot{\thepage}
-	\renewcommand{\headrulewidth}{0pt}
-	\renewcommand{\footrulewidth}{0pt}
+\fancyhf{}
+\chead{\thepage}
+\renewcommand{\headrulewidth}{0pt}
 }
 
 
@@ -217,6 +200,7 @@ citestyle = numeric
 \renewcommand{\cftsecaftersnum}{.}%         % Thêm dấu chấm vào sau mỗi section number ở mục lục 
 \renewcommand{\cftsubsecaftersnum}{.}%      % Thêm dấu chấm vào sau mỗi subsection number ở mục lục 
 
+
 \begin{document}
 
 % Bìa và thông tin ban đầu
@@ -224,58 +208,18 @@ citestyle = numeric
 \subfile{bia/bia_ngoai}
 \subfile{bia/bia_trong}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 \hypersetup{pageanchor=true}
-
 \pagenumbering{roman}
+
+\clearpage
+ \chapter*{LỜI CAM ĐOAN}
+\addcontentsline{toc}{chapter}{LỜI CAM ĐOAN}
+\subfile{chuong/loi_cam_doan}
 
 \clearpage
 \chapter*{LỜI CẢM ƠN}
 \addcontentsline{toc}{chapter}{LỜI CẢM ƠN}
 \subfile{chuong/loi_cam_on}
-
-\clearpage
-\chapter*{LỜI CAM ĐOAN}
-\addcontentsline{toc}{chapter}{LỜI CAM ĐOAN}
-\subfile{chuong/loi_cam_doan}
-
-\clearpage
-\chapter*{DANH MỤC TỪ VIẾT TẮT}
-\addcontentsline{toc}{chapter}{DANH MỤC TỪ VIẾT TẮT}
-\subfile{chuong/danh_muc_tu_viet_tat}
 
 \clearpage
 \tableofcontents
@@ -289,39 +233,44 @@ citestyle = numeric
 \listoffigures
 
 \clearpage
+\chapter*{DANH MỤC TỪ VIẾT TẮT}
+\addcontentsline{toc}{chapter}{DANH MỤC TỪ VIẾT TẮT}
+\subfile{chuong/viet_tat}
+
+\clearpage
 \pagenumbering{arabic}
 
-\mychapter{0}{LỜI MỞ ĐẦU}
-\addcontentsline{toc}{chapter}{LỜI MỞ ĐẦU}
-\subfile{chuong/loi_mo_dau}
+\mychapter{0}{MỞ ĐẦU}
+\addcontentsline{toc}{chapter}{MỞ ĐẦU}
+\subfile{chuong/mo_dau}
 
-% CHƯƠNG 1: CƠ SỞ LÝ THUYẾT
+% CHƯƠNG 1
 \setcounter{table}{0}
 \setcounter{figure}{0}
 \mychapter{1}{CHƯƠNG 1: CƠ SỞ LÝ THUYẾT}
 \addcontentsline{toc}{chapter}{CHƯƠNG 1: CƠ SỞ LÝ THUYẾT}
-\subfile{chuong/chuong_1_co_so_ly_thuyet}
+\subfile{chuong/chuong_1}
 
-% CHƯƠNG 2: KHẢO SÁT VÀ PHÂN TÍCH HỆ THỐNG
+% CHƯƠNG 2
 \setcounter{table}{0}
 \setcounter{figure}{0}
 \mychapter{2}{CHƯƠNG 2: KHẢO SÁT VÀ PHÂN TÍCH HỆ THỐNG}
 \addcontentsline{toc}{chapter}{CHƯƠNG 2: KHẢO SÁT VÀ PHÂN TÍCH HỆ THỐNG}
-\subfile{chuong/chuong_2_khao_sat_va_phan_tich_he_thong}
+\subfile{chuong/chuong_2}
 
-% CHƯƠNG 3: THIẾT KẾ HỆ THỐNG
+% CHƯƠNG 3
 \setcounter{table}{0}
 \setcounter{figure}{0}
 \mychapter{3}{CHƯƠNG 3: THIẾT KẾ HỆ THỐNG}
 \addcontentsline{toc}{chapter}{CHƯƠNG 3: THIẾT KẾ HỆ THỐNG}
-\subfile{chuong/chuong_3_thiet_ke_he_thong}
+\subfile{chuong/chuong_3}
 
-% CHƯƠNG 4: TRIỂN KHAI
+% CHƯƠNG 4
 \setcounter{table}{0}
 \setcounter{figure}{0}
 \mychapter{4}{CHƯƠNG 4: TRIỂN KHAI}
 \addcontentsline{toc}{chapter}{CHƯƠNG 4: TRIỂN KHAI}
-\subfile{chuong/chuong_4_trien_khai}
+\subfile{chuong/chuong_4}
 
 \clearpage
 \chapter*{KẾT LUẬN}
@@ -329,6 +278,8 @@ citestyle = numeric
 \subfile{chuong/ket_luan}
 
 \clearpage
+% Giữ lại một số tài liệu mẫu để phần tài liệu tham khảo hiển thị trong template.
+% Sinh viên thay hoặc xóa các mục này trong tham_khao/tai_lieu.bib.
 \nocite{c2017xydngwebsitehclp,ictustudent2013xydngchngtrnhh,ngc2024xydnghthngtvnt,grassucci2026beyond,schmelzer2024howai,bloom1984sigma,nye2014autotutor,kasneci2023chatgpt,openai2024hellogpt4o,openai2024apidocs,fastify2024docs,postgres2024docs,docker2024docs,microsoft2024monaco,redis2024docs,drizzle2024orm,topdev2023baocao}
 \printbibliography[heading=bibintoc,title={TÀI LIỆU THAM KHẢO}]
 
@@ -338,6 +289,8 @@ citestyle = numeric
 \clearpage
 \chapter*{NHẬN XÉT CỦA GIÁO VIÊN HƯỚNG DẪN}
 \addcontentsline{toc}{chapter}{NHẬN XÉT CỦA GIÁO VIÊN HƯỚNG DẪN}
-\subfile{chuong/nhan_xet_cua_giao_vien_huong_dan}
+\subfile{chuong/nhan_xet_gvhd}
 
 \end{document}
+
+
