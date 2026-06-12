@@ -40,7 +40,7 @@ services:
     ports:
       - '${PORT:-3000}:3000'
     environment:
-      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-ppat}
+      - DATABASE_URL=postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-ppat}
       - REDIS_URL=redis://cache:6379
       - JWT_SECRET=${JWT_SECRET:-super-secret-jwt-key}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -76,12 +76,12 @@ services:
       context: .
       dockerfile: apps/fe/Dockerfile
       args:
-        API_URL: http://api:3000
+        API_URL: http://api:3000/api
     container_name: ppat-web
     ports:
       - '80:80'
     environment:
-      API_URL: http://api:3000
+      API_URL: http://api:3000/api
       NODE_ENV: production
       PORT: 80
     networks:

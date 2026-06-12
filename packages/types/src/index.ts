@@ -140,6 +140,7 @@ export type ExerciseSubmitResult = {
   hint: string | null;
   suggestedLessonId: number | null;
   nextLessonSuggestion: LessonRecommendation | null;
+  shouldFetchNextLessonSuggestion: boolean;
   submission: {
     id: number;
     status: "pass" | "fail" | "error";

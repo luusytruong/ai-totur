@@ -4,7 +4,6 @@ import { and, eq } from 'drizzle-orm';
 import { CodeRunnerService } from '../../services/code-runner.service.js';
 import type { DrizzleDB } from '../../types.js';
 import { AnalyticsService } from '../analytics/analytics.service.js';
-import { LessonsService } from '../lessons/lessons.service.js';
 import type { SubmitCodeInput } from './exercises.schema.js';
 
 type SubmitAction = 'none' | 'hint' | 'reroute';
@@ -13,6 +12,8 @@ export type SubmitResult = {
   action: SubmitAction;
   hint: string | null;
   suggestedLessonId: number | null;
+  nextLessonSuggestion: null;
+  shouldFetchNextLessonSuggestion: boolean;
   submission: {
     id: number;
     status: 'pass' | 'fail' | 'error';
@@ -31,11 +32,9 @@ export type SubmitResult = {
 export class ExercisesService {
   private readonly codeRunner = new CodeRunnerService();
   private readonly analyticsService: AnalyticsService;
-  private readonly lessonsService: LessonsService;
 
   constructor(private readonly db: DrizzleDB) {
     this.analyticsService = new AnalyticsService(db);
-    this.lessonsService = new LessonsService(db);
   }
 
   async getById(id: number): Promise<ExerciseWithLesson | null> {
@@ -104,17 +103,16 @@ export class ExercisesService {
     // Always return pass right away
     if (codeResult.status === 'pass') {
       await this.analyticsService.onSubmitPass(userId, exerciseId);
-
-      const nextLessonSuggestion =
-        exercise.lesson?.id && (await this.isLessonCompleted(userId, exercise.lesson.id))
-          ? await this.lessonsService.recommendNextLesson(userId, exercise.lesson.id)
-          : null;
+      const shouldFetchNextLessonSuggestion = exercise.lesson?.id
+        ? await this.isLessonCompleted(userId, exercise.lesson.id)
+        : false;
 
       return {
         action: 'none',
         hint: null,
         suggestedLessonId: null,
-        nextLessonSuggestion,
+        nextLessonSuggestion: null,
+        shouldFetchNextLessonSuggestion,
         submission: {
           id: submission.id,
           status: 'pass',
@@ -139,6 +137,7 @@ export class ExercisesService {
         hint: null,
         suggestedLessonId: exercise.prerequisiteLessonId ?? null,
         nextLessonSuggestion: null,
+        shouldFetchNextLessonSuggestion: false,
         submission: {
           id: submission.id,
           status: submission.status,
@@ -155,6 +154,7 @@ export class ExercisesService {
         hint: exercise.hint ?? 'Hãy kiểm tra lại logic của hàm và các điều kiện biên.',
         suggestedLessonId: null,
         nextLessonSuggestion: null,
+        shouldFetchNextLessonSuggestion: false,
         submission: {
           id: submission.id,
           status: submission.status,
@@ -170,6 +170,7 @@ export class ExercisesService {
       hint: null,
       suggestedLessonId: null,
       nextLessonSuggestion: null,
+      shouldFetchNextLessonSuggestion: false,
       submission: {
         id: submission.id,
         status: submission.status,

@@ -1,13 +1,13 @@
 import { Metadata, Viewport } from "next"
 
 export const siteConfig = {
-  title: "Leaf",
-  siteName: "Leaf",
-  description: "Leaf is a AI Tutor system that helps you learn and grow.",
-  url: "https://demo.truong.cloud",
-  logo: "/leaf.png",
-  favicon: "/leaf.png",
-  author: { name: "Truong", url: "https://truong.cloud" },
+  title: "Lumi Code",
+  siteName: "Lumi Code",
+  description: "Lumi Code is a AI Tutor system that helps you learn and grow.",
+  url: "https://lumi-code.xyz",
+  logo: "/icon.png",
+  favicon: "/icon.png",
+  author: { name: "Lumi Code", url: "https://lumi-code.xyz" },
 }
 
 export const siteMetadata: Metadata = {

@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  allowedDevOrigins: ["127.0.0.1", "*.truong.cloud"],
+  allowedDevOrigins: ["127.0.0.1", "*.truong.cloud", "lumi-code.xyz"],
   devIndicators: false,
   experimental: {
     proxyClientMaxBodySize: "50mb",

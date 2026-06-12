@@ -349,14 +349,14 @@ export default function ChatApp({
                           variant="ghost"
                           onClick={async () => {
                             await navigator.clipboard.writeText(m.content)
-                            toast.success("Đã sao chép")
+                            toast.success("Đã sao chép nội dung")
                           }}
                         >
                           <Copy />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="bottom">
-                        <p>Sao chép</p>
+                        <p>Sao chép nội dung</p>
                       </TooltipContent>
                     </Tooltip>
 

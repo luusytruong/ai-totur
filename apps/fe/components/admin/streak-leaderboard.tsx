@@ -31,9 +31,9 @@ interface StreakLeaderboardProps {
 
 export function StreakLeaderboard({ users }: StreakLeaderboardProps) {
   // Sắp xếp theo streak cao -> thấp, lấy top 10
-  const top10 = [...users]
+  const top = [...users]
     .sort((a, b) => b.streakCount - a.streakCount)
-    .slice(0, 10)
+    .slice(0, 8)
 
   return (
     <Card className="flex h-full flex-col">
@@ -43,7 +43,7 @@ export function StreakLeaderboard({ users }: StreakLeaderboardProps) {
       </CardHeader>
       <CardContent className="flex-1 overflow-y-auto">
         <ItemGroup>
-          {top10.map((user, index) => (
+          {top.map((user, index) => (
             <Item key={user.id} className="p-3">
               <ItemMedia variant="image">
                 <div className="flex h-full w-full items-center justify-center rounded-xl bg-muted text-sm font-bold">
@@ -70,7 +70,7 @@ export function StreakLeaderboard({ users }: StreakLeaderboardProps) {
               </ItemActions>
             </Item>
           ))}
-          {top10.length === 0 && (
+          {top.length === 0 && (
             <div className="py-8 text-center text-sm text-muted-foreground">
               Chưa có dữ liệu người dùng.
             </div>

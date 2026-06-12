@@ -29,7 +29,7 @@ const LANG_CONFIG: Record<string, LangConfig> = {
   python: { image: 'python:3.11-alpine', fileName: 'main.py', cmd: ['python', '/app/main.py'] },
   cpp: { image: 'gcc:13', fileName: 'run.sh', cmd: ['sh', '/app/run.sh'] },
   'c++': { image: 'gcc:13', fileName: 'run.sh', cmd: ['sh', '/app/run.sh'] },
-  java: { image: 'openjdk:21-slim', fileName: 'run.sh', cmd: ['sh', '/app/run.sh'] },
+  java: { image: 'eclipse-temurin:21-jdk-jammy', fileName: 'run.sh', cmd: ['sh', '/app/run.sh'] },
 };
 
 // ─── Wrapper Builders ─────────────────────────────────────────────────────────

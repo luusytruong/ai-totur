@@ -18,6 +18,7 @@ import type {
   ExerciseDetailResponse,
   ExerciseSubmitResponse,
   ExerciseWithLesson,
+  LessonRecommendationResponse,
 } from "@workspace/types"
 import {
   AlertCircle,
@@ -155,13 +156,35 @@ export default function ExercisePage() {
           })
         } else {
           toast.success("Chúc mừng bạn đã hoàn thành bài học.", {
-            description:
-              "Ấn vào đây để làm bài tiếp theo, hoặc quay về bài học.",
+            description: "Bài làm đã được ghi nhận.",
             cancel: {
               label: "Quay về bài học",
               onClick: () => router.push(currentLessonHref),
             },
           })
+
+          if (exercise.lesson?.id && res.data?.shouldFetchNextLessonSuggestion) {
+            void apiClient
+              .get<LessonRecommendationResponse>(
+                `/lessons/${exercise.lesson.id}/next`
+              )
+              .then((recommendationRes) => {
+                const recommendedLesson = recommendationRes.data
+                if (!recommendedLesson) return
+
+                toast.success("Đã tìm thấy bài học tiếp theo.", {
+                  description:
+                    recommendedLesson.reason ?? "Dựa trên tiến độ hiện tại của bạn.",
+                  action: {
+                    label: "Mở bài học",
+                    onClick: () => router.push(`/lessons/${recommendedLesson.id}`),
+                  },
+                })
+              })
+              .catch(() => {
+                // Gợi ý bài tiếp theo không được chặn luồng nộp bài thành công.
+              })
+          }
         }
       }
     },

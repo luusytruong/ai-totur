@@ -21,6 +21,9 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/be ./apps/be
 COPY packages/types ./packages/types
 
+COPY --from=builder /repo/apps/be/dist ./apps/be/dist
+COPY --from=builder /repo/packages/types/dist ./packages/types/dist
+
 RUN pnpm install --frozen-lockfile --prod
 
 EXPOSE 3000

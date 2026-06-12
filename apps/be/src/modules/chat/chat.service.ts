@@ -208,9 +208,9 @@ export class ChatService {
     }
 
     return [
-      'Trả lời trực tiếp, súc tích, thiên về review hơn là giảng lại khái niệm cơ bản.',
+      'Đi thẳng vào trọng tâm vấn đề, súc tích, thiên về code review chuyên môn hơn là giảng lại lý thuyết cơ bản.',
       'Ép SV phân tích edge cases, defensive programming và trade-off.',
-      'Gắn với ngữ cảnh interview/production, giao SV tự implement trước rồi AI review sau.',
+      'Gắn với ngữ cảnh interview/production, giao SV tự suy nghĩ cách implement trước rồi AI review sau.',
       sharedRules,
       ...focusHints,
     ].join(' ');

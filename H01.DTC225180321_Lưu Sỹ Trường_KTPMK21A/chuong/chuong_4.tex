@@ -175,7 +175,7 @@ Bcrypt là hàm băm một chiều có tích hợp salt riêng cho từng mật 
 
 \subsection{Cô lập môi trường chạy code}
 
-Code của sinh viên được thực thi trong container Docker riêng biệt thay vì chạy trực tiếp trên máy chủ ứng dụng. Backend dùng Dockerode để tạo container theo từng ngôn ngữ lập trình, nạp mã nguồn và test case vào container dưới dạng archive, thực thi kiểm tra rồi xóa container sau khi chạy xong. Image được chọn theo ngôn ngữ: node:20-alpine cho JavaScript, python:3.11-alpine cho Python, gcc:13 cho C++ và openjdk:21-slim cho Java.
+Code của sinh viên được thực thi trong container Docker riêng biệt thay vì chạy trực tiếp trên máy chủ ứng dụng. Backend dùng Dockerode để tạo container theo từng ngôn ngữ lập trình, nạp mã nguồn và test case vào container dưới dạng archive, thực thi kiểm tra rồi xóa container sau khi chạy xong. Image được chọn theo ngôn ngữ: node:20-alpine cho JavaScript, python:3.11-alpine cho Python, gcc:13 cho C++ và eclipse-temurin:21-jdk-jammy cho Java.
 
 Môi trường sandbox được cô lập theo ba chiều. Về mạng, container được đặt NetworkMode: 'none' nên không có quyền truy cập internet hay mạng nội bộ. Về tài nguyên, bộ nhớ bị giới hạn ở 128 MB và CPU ở mức 50\% một nhân với CpuQuota: 50000 và CpuPeriod: 100000. Về thời gian, mỗi lần chạy có timeout 10 giây, vượt quá giới hạn này thì kết quả được tính là thất bại. Sau khi chạy xong, container bị xóa ngay bằng remove({ force: true }) để tránh tồn đọng tài nguyên.
 
