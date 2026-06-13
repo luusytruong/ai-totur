@@ -1,18 +1,24 @@
 /// <reference types="node" />
 
 import {
-    conversations,
-    exercises,
-    exerciseSubmissions,
-    lessons,
-    messages,
-    userAnalytics,
-    users,
+  conversations,
+  exercises,
+  exerciseSubmissions,
+  lessons,
+  messages,
+  userAnalytics,
+  users,
 } from '@workspace/types/db';
 import bcrypt from 'bcrypt';
 import 'dotenv/config';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import {
+  PYTHON_1_EXERCISES,
+  PYTHON_2_EXERCISES,
+  PYTHON_LESSON_1,
+  PYTHON_LESSON_2,
+} from './python-seeds.js';
 
 const connectionString =
   process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/ppat';
@@ -139,26 +145,44 @@ function createLessonSeeds(): LessonSeed[] {
       const difficulty = diffCycle[(lessonNumber - 1) % diffCycle.length];
       const title = `Bài học ${lessonNumber}: ${topic} (${language.toUpperCase()})`;
 
-      lessonsSeed.push({
-        language,
-        topic,
-        title,
-        difficulty,
-        contentMd: [
-          `# ${title}`,
-          '',
-          `## Mục tiêu`,
-          `- Nắm vững chủ đề: ${topic}.`,
-          `- Áp dụng được vào bài tập thực hành trong ${language.toUpperCase()}.`,
-          '',
-          `## Lý thuyết cốt lõi`,
-          `Bài học này trình bày các khái niệm nền tảng của **${topic}** trong **${language.toUpperCase()}** cùng ví dụ minh họa ngắn gọn.`,
-          '',
-          `## Lưu ý triển khai`,
-          `- Kiểm tra input/output đúng định dạng trước khi nộp bài.`,
-          `- Ưu tiên lời giải rõ ràng trước tối ưu vi mô.`,
-        ].join('\n'),
-      });
+      if (language === 'python' && i === 0) {
+        lessonsSeed.push({
+          language,
+          topic: PYTHON_LESSON_1.topic,
+          title: PYTHON_LESSON_1.title,
+          difficulty: PYTHON_LESSON_1.difficulty,
+          contentMd: PYTHON_LESSON_1.contentMd,
+        });
+      } else if (language === 'python' && i === 1) {
+        lessonsSeed.push({
+          language,
+          topic: PYTHON_LESSON_2.topic,
+          title: PYTHON_LESSON_2.title,
+          difficulty: PYTHON_LESSON_2.difficulty,
+          contentMd: PYTHON_LESSON_2.contentMd,
+        });
+      } else {
+        lessonsSeed.push({
+          language,
+          topic,
+          title,
+          difficulty,
+          contentMd: [
+            `# ${title}`,
+            '',
+            `## Mục tiêu`,
+            `- Nắm vững chủ đề: ${topic}.`,
+            `- Áp dụng được vào bài tập thực hành trong ${language.toUpperCase()}.`,
+            '',
+            `## Lý thuyết cốt lõi`,
+            `Bài học này trình bày các khái niệm nền tảng của **${topic}** trong **${language.toUpperCase()}** cùng ví dụ minh họa ngắn gọn.`,
+            '',
+            `## Lưu ý triển khai`,
+            `- Kiểm tra input/output đúng định dạng trước khi nộp bài.`,
+            `- Ưu tiên lời giải rõ ràng trước tối ưu vi mô.`,
+          ].join('\n'),
+        });
+      }
 
       lessonNumber++;
     }
@@ -332,15 +356,49 @@ async function seed() {
   insertedLessons.forEach((lesson, lessonIndex) => {
     for (let exerciseNo = 1; exerciseNo <= 4; exerciseNo++) {
       const difficulty = difficultyPlan[planIndex++];
+      const isFirstExerciseInLesson = exerciseNo === 1;
+      const previousLessonId = lessonIndex > 0 ? insertedLessons[lessonIndex - 1]?.id : null;
+
+      if (lesson.language === 'python' && lessonIndex === 0) {
+        const customEx = PYTHON_1_EXERCISES[exerciseNo - 1];
+        if (customEx) {
+          exercisesToInsert.push({
+            lessonId: lesson.id,
+            title: customEx.title,
+            description: customEx.description,
+            starterCode: customEx.starterCode,
+            expectedOutput: customEx.expectedOutput,
+            testCases: customEx.testCases,
+            hint: customEx.hint,
+            prerequisiteLessonId: isFirstExerciseInLesson ? (previousLessonId ?? null) : null,
+          });
+        }
+        continue;
+      }
+
+      if (lesson.language === 'python' && lessonIndex === 1) {
+        const customEx = PYTHON_2_EXERCISES[exerciseNo - 1];
+        if (customEx) {
+          exercisesToInsert.push({
+            lessonId: lesson.id,
+            title: customEx.title,
+            description: customEx.description,
+            starterCode: customEx.starterCode,
+            expectedOutput: customEx.expectedOutput,
+            testCases: customEx.testCases,
+            hint: customEx.hint,
+            prerequisiteLessonId: isFirstExerciseInLesson ? (previousLessonId ?? null) : null,
+          });
+        }
+        continue;
+      }
+
       const seedItem = createExerciseSeed(
         lesson.language as LessonSeed['language'],
         difficulty,
         lessonIndex + 1,
         exerciseNo,
       );
-
-      const isFirstExerciseInLesson = exerciseNo === 1;
-      const previousLessonId = lessonIndex > 0 ? insertedLessons[lessonIndex - 1]?.id : null;
 
       exercisesToInsert.push({
         lessonId: lesson.id,
@@ -350,7 +408,7 @@ async function seed() {
         expectedOutput: seedItem.expectedOutput,
         testCases: seedItem.testCases,
         hint: seedItem.hint,
-        prerequisiteLessonId: isFirstExerciseInLesson ? previousLessonId ?? null : null,
+        prerequisiteLessonId: isFirstExerciseInLesson ? (previousLessonId ?? null) : null,
       });
     }
   });

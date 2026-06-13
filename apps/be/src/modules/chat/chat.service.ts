@@ -188,6 +188,7 @@ export class ChatService {
 
     if (level === 'beginner') {
       return [
+        'ĐIỀU HƯỚNG VỀ KIẾN THỨC NỀN (Redirect): Nếu học viên hỏi về một khái niệm phức tạp (ví dụ: đệ quy) nhưng dữ liệu cho thấy họ chưa vững các kiến thức nền tảng (ví dụ: hàm, vòng lặp), TUYỆT ĐỐI KHÔNG dạy vội khái niệm mới. Hãy khuyên họ quay lại học và làm quen với khái niệm cơ bản trước (ví dụ: "Em nên hiểu rõ về hàm cơ bản trước đã nhé").',
         'Dùng phép tương đồng gần gũi với đời sống.',
         'Dẫn dắt qua từng bước rất nhỏ, mỗi lần tối đa 3 bước.',
         'Nhiều câu hỏi ngắn để SV tự khám phá.',
@@ -199,18 +200,18 @@ export class ChatService {
 
     if (level === 'intermediate') {
       return [
-        'Bridge từ kiến thức SV đã biết sang khái niệm mới.',
-        'Đặt câu hỏi gợi ý, yêu cầu SV tự suy luận trước.',
-        'Sau khi SV làm được, mới chốt pattern tốt hơn và lý do tại sao.',
+        'TẠO CẦU NỐI (Bridge): Luôn liên kết hướng dẫn với những kiến thức hoặc khái niệm tương đương mà học viên đã biết (ví dụ: giải thích đệ quy thông qua khái niệm vòng lặp tương tự).',
+        'Đặt câu hỏi gợi ý theo phương pháp Socratic, yêu cầu SV tự suy luận từng bước thay vì nói thẳng ra.',
+        'Sau khi SV tự làm được, mới bắt đầu chỉ ra các pattern tốt hơn.',
         sharedRules,
         ...focusHints,
       ].join(' ');
     }
 
     return [
-      'Đi thẳng vào trọng tâm vấn đề, súc tích, thiên về code review chuyên môn hơn là giảng lại lý thuyết cơ bản.',
-      'Ép SV phân tích edge cases, defensive programming và trade-off.',
-      'Gắn với ngữ cảnh interview/production, giao SV tự suy nghĩ cách implement trước rồi AI review sau.',
+      'ĐI THẲNG VÀO TRỌNG TÂM + YÊU CẦU CAO HƠN (Direct): Đưa ra yêu cầu khắt khe hơn. Ép SV phải cân nhắc rủi ro, phân tích edge cases, xử lý lỗi (ví dụ ValueError) và liên hệ đến môi trường thực tế (production/interview).',
+      'Không giảng dạy lý thuyết cơ bản: Súc tích, thiên về code review chuyên môn.',
+      'Giao SV tự đưa ra thiết kế hoặc implement trước rồi AI sẽ review và bắt bẻ sau.',
       sharedRules,
       ...focusHints,
     ].join(' ');
@@ -354,7 +355,8 @@ Additional rules:
 1. If the student mentions an error type you see in their error patterns, proactively note it.
 2. Be encouraging but never hand out the full solution.
 3. Always respond in Vietnamese (tiếng Việt).
-4. Keep the response aligned with the student's current level and recent interaction summary.`;
+4. Keep the response aligned with the student's current level and recent interaction summary.
+5. TUYỆT ĐỐI TỪ CHỐI trả lời các câu hỏi ngoài lề (ví dụ: bóng đá, trường học, nhân vật, giải trí...). KHÔNG BAO GIỜ giải thích hay cố gắng trả lời các câu hỏi đó, mà chỉ nhắc nhở sinh viên tập trung vào bài học lập trình.`;
   }
 
   private async buildSystemPrompt(
@@ -413,7 +415,8 @@ Additional rules:
 1. If the student mentions an error type you see in their error patterns, proactively note it.
 2. Be encouraging but never hand out the full solution.
 3. Always respond in Vietnamese (tiếng Việt).
-4. Keep the response aligned with the student's current level and recent interaction summary.`;
+4. Keep the response aligned with the student's current level and recent interaction summary.
+5. TUYỆT ĐỐI TỪ CHỐI trả lời các câu hỏi ngoài lề (ví dụ: bóng đá, trường học, nhân vật, giải trí...). KHÔNG BAO GIỜ giải thích hay cố gắng trả lời các câu hỏi đó, mà chỉ nhắc nhở sinh viên tập trung vào bài học lập trình.`;
   }
 
   async saveMessages(
