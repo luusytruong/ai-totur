@@ -37,6 +37,12 @@
 \usepackage{longtable}								% Dùng cho các bảng dài, nhiều trang
 \usepackage{ltablex}
 \keepXColumns
+\usepackage{listings}
+\usepackage{microtype}
+\usepackage{xurl}
+% Tự động áp dụng cơ chế ngắt dòng của url vào trong tất cả các lệnh \texttt
+\let\oldtexttt\texttt
+\renewcommand{\texttt}[1]{\oldtexttt{\urlstyle{tt}\url{#1}}}
 \usepackage{amsmath,amssymb,amsfonts}			% Dùng để chèn các công thức Toán
 \usepackage{makecell}								% Dùng để làm nổi bật header của bảng
 \usepackage{float}								% Dùng để thiết đặt thuộc tính H (here) cho ảnh
@@ -136,9 +142,13 @@ citestyle = numeric
 
 % Định dạng cho code
 \usepackage{fancyvrb}			% Phiên bản nâng cao của verbatim, dùng để chèn code
+\usepackage{fvextra}
 \fvset{
 	tabsize=4,					% Định tabsize 
 	frame=single,				% Khung
+	fontsize=\small,
+  breaklines=true,        % BẮT BUỘC: Tự động xuống dòng khi code quá dài
+  breakanywhere=true,     % (Tùy chọn) Cho phép ngắt dòng ở bất kỳ ký tự nào nếu quá khít
 }
 
 \title{XÂY DỰNG HỆ THỐNG GIA SƯ LẬP TRÌNH CÁ NHÂN HOÁ SỬ DỤNG MÔ HÌNH NGÔN NGỮ LỚN}
@@ -278,9 +288,7 @@ citestyle = numeric
 \subfile{chuong/ket_luan}
 
 \clearpage
-% Giữ lại một số tài liệu mẫu để phần tài liệu tham khảo hiển thị trong template.
-% Sinh viên thay hoặc xóa các mục này trong tham_khao/tai_lieu.bib.
-\nocite{c2017xydngwebsitehclp,ictustudent2013xydngchngtrnhh,ngc2024xydnghthngtvnt,grassucci2026beyond,schmelzer2024howai,bloom1984sigma,nye2014autotutor,kasneci2023chatgpt,openai2024hellogpt4o,openai2024apidocs,fastify2024docs,postgres2024docs,docker2024docs,microsoft2024monaco,redis2024docs,drizzle2024orm,topdev2023baocao}
+\nocite{*}
 \printbibliography[heading=bibintoc,title={TÀI LIỆU THAM KHẢO}]
 
 \clearpage

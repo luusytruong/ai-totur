@@ -133,32 +133,32 @@ Cơ chế dynamic system prompt là yếu tố kỹ thuật trực tiếp tạo 
 
 Template prompt được thiết kế gồm hai phần. Phần đầu là profile data các placeholder được điền động từ database:
 
-\begin{itemize}
-    \item \textit{You are a personalized programming tutor AI.}
-    \item \textit{Here is the student's profile:}
-    \item \textit{Name: {student\_name}}
-    \item \textit{Current level: {level} (beginner / intermediate / advanced)}
-    \item \textit{Languages learning: {languages}}
-    \item \textit{Topics already mastered: {known\_topics}}
-    \item \textit{Common mistakes: {error\_patterns}}
-    \item \textit{Lessons completed: {completed\_lessons}/{total\_lessons}}
-    \item \textit{Recent interaction summary: {recent\_summary}}
-\end{itemize}
+\begin{Verbatim}
+You are a personalized programming tutor AI.
+Here is the student's profile:
+Name: {student_name}
+Current level: {level} (beginner / intermediate / advanced)
+Languages learning: {languages}
+Topics already mastered: {known_topics}
+Common mistakes: {error_patterns}
+Lessons completed: {completed_lessons}/{total_lessons}
+Recent interaction summary: {recent_summary}
+\end{Verbatim}
 
 Các placeholder này được lấy từ các bảng khác nhau trong database: {student\_name} và {level} từ bảng users, {known\_topics} và {error\_patterns} từ cột JSONB trong userAnalytics, {completed\_lessons} tổng hợp từ userProgress, còn {recent\_summary} là tóm tắt từ 10 tin nhắn gần nhất trong messages.
 
 Phần thứ hai là teaching guidelines bộ quy tắc cố định áp dụng cho mọi sinh viên, định nghĩa hành vi của AI Tutor:
 
-\begin{itemize}
-    \item \textit{Teaching guidelines:}
-    \item \textit{1. NEVER give the full solution directly. Use the Socratic method - ask guiding questions.}
-    \item \textit{2. Adjust explanation depth to the student's level.}
-    \item \textit{3. If the student hasn't learned a prerequisite, gently redirect to that first.}
-    \item \textit{4. For intermediate/advanced students, suggest edge cases, best practices, or comparisons.}
-    \item \textit{5. Keep responses concise. Use code blocks for examples.}
-    \item \textit{6. Acknowledge when the student does something right - build confidence.}
-    \item \textit{7. If the student is stuck after 2 attempts, provide a small hint, not the answer.}
-\end{itemize}
+\begin{Verbatim}
+Teaching guidelines:
+1. NEVER give the full solution directly. Use the Socratic method - ask guiding questions.
+2. Adjust explanation depth to the student's level.
+3. If the student hasn't learned a prerequisite, gently redirect to that first.
+4. For intermediate/advanced students, suggest edge cases, best practices, or comparisons.
+5. Keep responses concise. Use code blocks for examples.
+6. Acknowledge when the student does something right - build confidence.
+7. If the student is stuck after 2 attempts, provide a small hint, not the answer.
+\end{Verbatim}
 
 Bảy quy tắc này phản ánh trực tiếp các nguyên tắc sư phạm đã trình bày ở Chương 2: không đưa đáp án trực tiếp (quy tắc 1), điều chỉnh theo trình độ (quy tắc 2), phát hiện kiến thức tiên quyết còn thiếu (quy tắc 3), và chỉ gợi ý nhỏ sau hai lần thất bại (quy tắc 7). Nhờ phần profile data thay đổi theo từng sinh viên, cùng một bộ quy tắc này cho ra hành vi hoàn toàn khác nhau sinh viên beginner được giải thích bằng analogy đơn giản, sinh viên advanced được thách thức thêm với edge case và so sánh độ phức tạp thuật toán.
 
@@ -191,7 +191,7 @@ Thay vì chờ GPT-4o sinh xong toàn bộ câu trả lời rồi mới trả v�
 
 Luồng xử lý diễn ra theo thứ tự sau. Khi sinh viên gửi tin nhắn, Frontend gọi POST request đến endpoint chat và ngay lập tức mở một EventSource connection để lắng nghe stream. Phía Backend, sau khi hoàn thành bước build dynamic system prompt, gọi OpenAI SDK với stream: true và set header response là Content-Type: text/event-stream để giữ kết nối mở. Mỗi token được GPT-4o trả về, Backend forward ngay qua SSE mà không buffer lại. Frontend lắng nghe từng SSE event, lấy nội dung token và append vào chat bubble hiện tại theo từng ký tự.
 
-Khi GPT-4o gửi tín hiệu kết thúc \[DONE\], Backend đóng SSE connection và kích hoạt bất đồng bộ hai tác vụ: INSERT toàn bộ nội dung tin nhắn vào bảng messages và UPDATE userAnalytics. Việc tách phần lưu dữ liệu ra khỏi luồng streaming là có chủ ý sinh viên nhận được token đầu tiên trong vòng vài trăm millisecond mà không bị block bởi các tác vụ ghi database phía sau.
+Khi GPT-4o gửi tín hiệu kết thúc [DONE], Backend đóng SSE connection và kích hoạt bất đồng bộ hai tác vụ: INSERT toàn bộ nội dung tin nhắn vào bảng messages và UPDATE userAnalytics. Việc tách phần lưu dữ liệu ra khỏi luồng streaming là có chủ ý sinh viên nhận được token đầu tiên trong vòng vài trăm millisecond mà không bị block bởi các tác vụ ghi database phía sau.
 
 Một điểm cần lưu ý là SSE là giao thức một chiều từ server về client, khác với WebSocket hai chiều. Điều này phù hợp với bài toán chat AI vì trong khi AI đang trả lời, sinh viên không cần gửi thêm dữ liệu chỉ cần nhận stream. Khi sinh viên muốn gửi tin nhắn mới, một POST request hoàn toàn mới được khởi tạo và một SSE stream mới được mở.
 

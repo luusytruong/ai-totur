@@ -127,18 +127,19 @@ Cả hai Dockerfile đều dùng node:20-alpine làm base image. Alpine Linux gi
 
 Để triển khai hệ thống, máy chủ cần cài sẵn Docker Engine và Docker Compose. Sau khi clone repository về máy, bước đầu tiên là tạo file .env ở thư mục gốc với các biến môi trường bắt buộc:
 
-\begin{itemize}
-    \item POSTGRES\_USER=postgres
-    \item POSTGRES\_PASSWORD=your\_password
-    \item POSTGRES\_DB=ppat
-    \item JWT\_SECRET=your\_jwt\_secret\_key
-    \item OPENAI\_API\_KEY=sk-...
-    \item CORS\_ORIGIN=<http://localhost>
-    \item PORT=3000
-    \item RESEND\_API\_KEY=your\_resend\_api\_key
-    \item FRONTEND\_URL=<http://localhost>
-    \item LOG\_LEVEL=info
-\end{itemize}
+\begin{Verbatim}
+# .env
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_password
+POSTGRES_DB=ppat
+JWT_SECRET=your_jwt_secret_key
+OPENAI_API_KEY=sk-...
+CORS_ORIGIN=http://localhost
+PORT=3000
+RESEND_API_KEY=your_resend_api_key
+FRONTEND_URL=http://localhost
+LOG_LEVEL=info
+\end{Verbatim}
 
 Sau khi có file .env, chạy lệnh sau để build toàn bộ image và khởi động các service: docker compose up --build -d
 
@@ -146,10 +147,11 @@ Docker Compose sẽ tự động build image cho api và web, kéo image postgre
 
 Sau khi service api healthy, chạy migration để tạo schema database và seed dữ liệu thử nghiệm:
 
-\begin{itemize}
-    \item docker compose exec api node apps/be/dist/db/migrate.js
-    \item docker compose exec api node apps/be/dist/scripts/seed.js
-\end{itemize}
+\begin{Verbatim}
+# terminal
+docker compose exec api node apps/be/dist/db/migrate.js
+docker compose exec api node apps/be/dist/scripts/seed.js
+\end{Verbatim}
 
 Truy cập \texttt{http://localhost} để vào giao diện web. Kiểm tra trạng thái API tại \texttt{http://localhost:3000/health}.
 
@@ -515,7 +517,7 @@ Bước 5 - Theo dõi tiến độ: Sinh viên vào mục "Bảng điều khiể
 
 \subsection{Hướng dẫn dành cho Admin}
 
-Bước 1 - Đăng nhập tài khoản Admin: Tài khoản admin mặc định được tạo sẵn với thông tin đăng nhập: email <admin@gmail.com>, mật khẩu 111111. Sau khi đăng nhập lần đầu, admin nên đổi mật khẩu trong phần cài đặt tài khoản.
+Bước 1 - Đăng nhập tài khoản Admin: Tài khoản admin mặc định được tạo sẵn với thông tin đăng nhập: email \textbf{admin@gmail.com}, mật khẩu \textbf{111111}. Sau khi đăng nhập lần đầu, admin nên đổi mật khẩu trong phần cài đặt tài khoản.
 
 Bước 2 - Quản lý người dùng: Admin vào mục quản lý người dùng để xem danh sách tài khoản, kiểm tra trình độ và trạng thái hoạt động của từng sinh viên.
 
