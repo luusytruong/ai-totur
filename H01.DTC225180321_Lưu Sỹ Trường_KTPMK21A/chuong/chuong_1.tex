@@ -11,7 +11,7 @@ Trí tuệ nhân tạo (AI) là nhánh nghiên cứu trong khoa học máy tính
 
 Xét về phạm vi năng lực, AI hiện nay được phân thành hai nhóm. Nhóm thứ nhất thường gọi là Narrow AI hay AI chuyên biệt bao gồm các mô hình được tối ưu hóa cho một miền bài toán xác định, chẳng hạn phân loại văn bản, nhận dạng giọng nói hay sinh code. GPT-4o thuộc nhóm này: dù hiệu năng rất cao trong xử lý ngôn ngữ tự nhiên và lập luận, mô hình không có nhận thức tổng quát hay ý thức. Nhóm thứ hai Artificial General Intelligence (AGI) là dạng AI lý thuyết có thể linh hoạt giải quyết bất kỳ vấn đề nào tương tự con người. AGI chưa được hiện thực hóa và vẫn là chủ đề nghiên cứu mở trong cộng đồng khoa học.
 
-Trong bối cảnh giáo dục, điều AI làm được mà các phương pháp truyền thống khó đạt là phục vụ từng học viên một cách riêng lẻ. Thay vì một giáo trình cố định áp dụng đồng loạt, AI có thể quan sát hành vi học tập của từng người chủ đề nào được nắm vững, lỗi nào lặp đi lặp lại, nhịp độ tiến bộ ra sao và điều chỉnh nội dung tương ứng. Grassucci và cộng sự (2025) phân tích vai trò kép của LLM trong học tập: một mặt đóng vai gia sư kiên nhẫn, dẫn dắt học viên qua từng bước của bài tập; mặt khác đóng vai cộng tác viên, giúp học viên tiếp cận các bài toán mở phức tạp hơn mức chương trình quy định.
+Trong bối cảnh giáo dục, điều AI làm được mà các phương pháp truyền thống khó đạt là phục vụ từng học viên một cách riêng lẻ. Thay vì một giáo trình cố định áp dụng đồng loạt, AI có thể quan sát hành vi học tập của từng người chủ đề nào được nắm vững, lỗi nào lặp đi lặp lại, nhịp độ tiến bộ ra sao và điều chỉnh nội dung tương ứng. Grassucci và cộng sự (2025) phân tích vai trò kép của LLM trong học tập: một mặt đóng vai gia sư kiên nhẫn, dẫn dắt học viên qua từng bước của bài tập; mặt khác đóng vai cộng tác viên, giúp học viên tiếp cận các bài toán mở phức tạp hơn mức chương trình quy định \cite{grassucci2026beyond}.
 
 Với lĩnh vực lập trình, AI có thể hỗ trợ ở nhiều tầng: giải thích khái niệm, chỉ ra lỗi trong code, gợi ý hướng debug và phân tích nguyên nhân sai lầm. Tuy nhiên, các công cụ phổ biến hiện nay như ChatGPT vận hành theo từng phiên độc lập không duy trì bộ nhớ về người dùng giữa các lần truy cập, không biết học viên đang ở bước nào trong lộ trình, và không điều chỉnh chiến lược giảng dạy theo trình độ thực tế. Đây là khoảng trống mà hệ thống PPAT trong đồ án này hướng đến lấp đầy thông qua cơ chế knowledge log và dynamic system prompt.
 
@@ -38,15 +38,15 @@ Dưới đây là một số khái niệm kỹ thuật thường gặp khi làm 
 
 \subsection{GPT-4o}
 
-GPT-4o là phiên bản được đánh giá rất cao trong dòng mô hình GPT của OpenAI, ra mắt tháng 13/5/2024. So với các phiên bản trước, GPT-4o được thiết kế để xử lý hiệu quả hơn các tác vụ đòi hỏi lập luận nhiều bước, hiểu ngữ cảnh dài và sinh code có chất lượng cao những đặc tính trực tiếp liên quan đến bài toán gia sư lập trình.
+GPT-4o là phiên bản được đánh giá rất cao trong dòng mô hình GPT của OpenAI, ra mắt tháng 13/5/2024 \cite{openai2024hellogpt4o}. So với các phiên bản trước, GPT-4o được thiết kế để xử lý hiệu quả hơn các tác vụ đòi hỏi lập luận nhiều bước, hiểu ngữ cảnh dài và sinh code có chất lượng cao những đặc tính trực tiếp liên quan đến bài toán gia sư lập trình.
 
-GPT-4o có một số điểm mạnh nổi bật so với các mô hình thế hệ trước. Về khả năng xử lý code, mô hình có thể giải thích thuật toán, phân tích lỗi cú pháp và logic, gợi ý cách sửa và giải thích từng bước giải quyết bài toán những tính năng phù hợp trực tiếp với yêu cầu của một hệ thống gia sư lập trình. Về context window, GPT-4o hỗ trợ tới 128.000 token, cho phép hệ thống duy trì toàn bộ lịch sử học tập của sinh viên trong suốt phiên làm việc mà không bị mất ngữ cảnh. Ngoài ra, GPT-4o hỗ trợ streaming API, tức trả về từng token theo thời gian thực thay vì chờ sinh xong toàn bộ câu trả lời giúp giao diện chat phản hồi mượt mà và tạo trải nghiệm tương tác tự nhiên hơn cho sinh viên.
+GPT-4o có một số điểm mạnh nổi bật so với các mô hình thế hệ trước. Về khả năng xử lý code, mô hình có thể giải thích thuật toán, phân tích lỗi cú pháp và logic, gợi ý cách sửa và giải thích từng bước giải quyết bài toán những tính năng phù hợp trực tiếp với yêu cầu của một hệ thống gia sư lập trình. Về context window, GPT-4o hỗ trợ tới 128.000 token, cho phép hệ thống duy trì toàn bộ lịch sử học tập của sinh viên trong suốt phiên làm việc mà không bị mất ngữ cảnh. Ngoài ra, GPT-4o hỗ trợ streaming API, tức trả về từng token theo thời gian thực thay vì chờ sinh xong toàn bộ câu trả lời giúp giao diện chat phản hồi mượt mà và tạo trải nghiệm tương tác tự nhiên hơn cho sinh viên \cite{openai2024apidocs}.
 
 \section{LLM trong giáo dục lập trình}
 
 \subsection{Vai trò kép của LLM trong giáo dục}
 
-Grassucci và cộng sự (2025) phân tích LLM trong môi trường học tập qua hai góc nhìn bổ sung cho nhau, không thay thế nhau.
+Grassucci và cộng sự (2025) phân tích LLM trong môi trường học tập qua hai góc nhìn bổ sung cho nhau, không thay thế nhau \cite{grassucci2026beyond}.
 
 Góc nhìn thứ nhất đặt LLM ở vị trí gia sư kiên nhẫn. Khác với giáo viên trong lớp đông phải điều tiết theo tốc độ trung bình, một LLM có thể phục vụ riêng từng người học vào bất kỳ thời điểm nào giải thích lại khái niệm theo cách khác khi sinh viên chưa hiểu, thu gọn giải thích khi sinh viên đã nắm, và chỉ ra đúng điểm sai thay vì đưa ra nhận xét chung chung. Khả năng điều chỉnh tức thì trong quá trình hội thoại là thứ sách giáo khoa tĩnh không thể làm được.
 
@@ -62,7 +62,7 @@ Hình thức cá nhân hóa cơ bản nhất là điều chỉnh theo năng lự
 
 Mức cá nhân hóa sâu hơn đòi hỏi tích hợp hồ sơ học tập cá nhân bao gồm lịch sử làm bài, các lỗi lặp đi lặp lại và tốc độ tiến bộ để mô hình có ngữ cảnh đủ phong phú khi xây dựng phản hồi. Ví dụ cụ thể: một sinh viên hay quên điều kiện dừng trong đệ quy sẽ được AI chủ động nhắc về điểm này ngay khi bắt đầu bài liên quan, thay vì chờ sinh viên mắc lỗi rồi mới phản ứng. Đây chính xác là cơ chế knowledge log được xây dựng trong hệ thống PPAT.
 
-Một hướng nghiên cứu xa hơn mà Grassucci và cộng sự (2025) đề xuất là tích hợp tín hiệu sinh lý nhịp tim, biểu cảm khuôn mặt để nhận diện trạng thái cảm xúc và điều chỉnh cách dạy khi phát hiện người học đang căng thẳng hoặc mất tập trung. Hướng này hiện còn trong giai đoạn nghiên cứu và nằm ngoài phạm vi của đồ án.
+Một hướng nghiên cứu xa hơn mà Grassucci và cộng sự (2025) đề xuất là tích hợp tín hiệu sinh lý nhịp tim, biểu cảm khuôn mặt để nhận diện trạng thái cảm xúc và điều chỉnh cách dạy khi phát hiện người học đang căng thẳng hoặc mất tập trung \cite{grassucci2026beyond}. Hướng này hiện còn trong giai đoạn nghiên cứu và nằm ngoài phạm vi của đồ án.
 
 \subsection{Nguyên tắc thiết kế hệ thống PPAT từ cơ sở lý thuyết}
 
@@ -106,7 +106,7 @@ Các thư viện hỗ trợ UI đáng chú ý khác bao gồm Lucide React cung 
 
 \subsection{Monaco Editor}
 
-Monaco Editor là engine trình soạn thảo code được dùng trong Visual Studio Code, được tích hợp vào dự án qua package @monaco-editor/react. Monaco mang lại trải nghiệm code editor chuyên nghiệp ngay trên trình duyệt với đầy đủ các tính năng như syntax highlighting cho nhiều ngôn ngữ (Python, JavaScript, C++, Java), tự động hoàn thành, đánh dấu lỗi cú pháp theo thời gian thực và minimap. Trong màn hình làm bài tập, Monaco được đặt trong layout split-view cùng với phần đề bài, cho phép sinh viên đọc yêu cầu và viết code cùng lúc mà không phải cuộn trang.
+Monaco Editor là engine trình soạn thảo code được dùng trong Visual Studio Code, được tích hợp vào dự án qua package @monaco-editor/react \cite{microsoft2024monaco}. Monaco mang lại trải nghiệm code editor chuyên nghiệp ngay trên trình duyệt với đầy đủ các tính năng như syntax highlighting cho nhiều ngôn ngữ (Python, JavaScript, C++, Java), tự động hoàn thành, đánh dấu lỗi cú pháp theo thời gian thực và minimap. Trong màn hình làm bài tập, Monaco được đặt trong layout split-view cùng với phần đề bài, cho phép sinh viên đọc yêu cầu và viết code cùng lúc mà không phải cuộn trang.
 
 \subsection{Quản lý state và dữ liệu}
 
@@ -126,7 +126,7 @@ Vì nội dung bài học và phản hồi từ AI Tutor đều được lưu v�
 
 \subsection{Fastify \& TypeScript}
 
-Fastify là một web framework cho Node.js được thiết kế với triết lý ưu tiên hiệu năng và tính mở rộng. So với Express framework phổ biến nhất trong hệ sinh thái Node.js Fastify xử lý request nhanh hơn xấp xỉ hai lần nhờ cơ chế serialization JSON tối ưu và kiến trúc plugin được thiết kế lại từ đầu. Mỗi tính năng trong Fastify đều được đóng gói dưới dạng plugin độc lập, cho phép hệ thống chỉ tải những thành phần thực sự cần thiết thay vì khởi tạo toàn bộ middleware như cách truyền thống.
+Fastify là một web framework cho Node.js được thiết kế với triết lý ưu tiên hiệu năng và tính mở rộng \cite{fastify2024docs}. So với Express framework phổ biến nhất trong hệ sinh thái Node.js Fastify xử lý request nhanh hơn xấp xỉ hai lần nhờ cơ chế serialization JSON tối ưu và kiến trúc plugin được thiết kế lại từ đầu. Mỗi tính năng trong Fastify đều được đóng gói dưới dạng plugin độc lập, cho phép hệ thống chỉ tải những thành phần thực sự cần thiết thay vì khởi tạo toàn bộ middleware như cách truyền thống.
 
 Điểm đắt giá của Fastify là khả năng kết hợp schema validation ngay trong khai báo route thông qua JSON Schema hoặc thư viện bên ngoài như Zod. Khi kết hợp với TypeScript, toàn bộ luồng dữ liệu từ request đầu vào đến response đầu ra đều được kiểm tra kiểu tĩnh tại thời điểm biên dịch, loại bỏ một lớp lỗi runtime phổ biến trong các dự án JavaScript thuần. Việc đồng nhất TypeScript trên cả frontend lẫn backend còn mang lại lợi ích quan trọng: các kiểu dữ liệu dùng chung như entity, request body, response schema có thể được định nghĩa một lần trong package chung và chia sẻ giữa hai đầu ứng dụng mà không cần viết lại.
 
@@ -136,7 +136,7 @@ Trong hệ thống PPAT, Fastify đảm nhận vai trò API Gateway tiếp nhậ
 
 Zod là thư viện validation schema cho TypeScript với đặc điểm quan trọng là tự động suy diễn kiểu TypeScript từ định nghĩa schema, loại bỏ hoàn toàn sự trùng lặp giữa khai báo kiểu và logic kiểm tra dữ liệu. Thay vì viết interface TypeScript riêng rồi viết thêm hàm validate riêng, lập trình viên chỉ cần định nghĩa một schema Zod duy nhất và từ đó suy ra cả kiểu lẫn validation. Trong PPAT, Zod được dùng để kiểm tra toàn bộ request body trước khi đưa vào xử lý từ payload đăng ký tài khoản, nội dung tin nhắn chat, đến code submission của sinh viên đảm bảo dữ liệu đầu vào luôn hợp lệ trước khi chạm vào logic nghiệp vụ.
 
-Drizzle ORM là một Object Relational Mapper thế hệ mới cho TypeScript, theo hướng "type-safe by default". Khác với các ORM truyền thống như Sequelize hay TypeORM vốn sinh ra query dựa trên decorator và reflection, Drizzle định nghĩa schema database trực tiếp bằng TypeScript và tự động suy diễn kiểu cho kết quả truy vấn. Điều này có nghĩa là khi thực hiện JOIN giữa bảng users và user\_analytics, TypeScript biết chính xác kết quả trả về có những trường nào mà không cần cast thủ công. Drizzle cũng hỗ trợ migration tự động theo dõi thay đổi của schema và tạo ra SQL migration script tương ứng giúp quá trình phát triển và triển khai trở nên nhất quán hơn.
+Drizzle ORM là một Object Relational Mapper thế hệ mới cho TypeScript, theo hướng "type-safe by default" \cite{drizzle2024orm}. Khác với các ORM truyền thống như Sequelize hay TypeORM vốn sinh ra query dựa trên decorator và reflection, Drizzle định nghĩa schema database trực tiếp bằng TypeScript và tự động suy diễn kiểu cho kết quả truy vấn. Điều này có nghĩa là khi thực hiện JOIN giữa bảng users và user\_analytics, TypeScript biết chính xác kết quả trả về có những trường nào mà không cần cast thủ công. Drizzle cũng hỗ trợ migration tự động theo dõi thay đổi của schema và tạo ra SQL migration script tương ứng giúp quá trình phát triển và triển khai trở nên nhất quán hơn.
 
 \subsection{Code Runner Sandbox (Dockerode \& tar-stream)}
 
@@ -150,13 +150,13 @@ Cách tiếp cận này cho phép Code Runner nằm hoàn toàn bên trong Fasti
 
 \subsection{PostgreSQL 15}
 
-PostgreSQL là hệ quản trị cơ sở dữ liệu quan hệ mã nguồn mở với lịch sử phát triển hơn ba mươi năm, nổi tiếng với sự tuân thủ nghiêm ngặt chuẩn SQL và khả năng mở rộng linh hoạt. Trong PPAT, PostgreSQL được chọn vì hai lý do kỹ thuật chính. Thứ nhất, đây là yêu cầu công nghệ của đồ án. Thứ hai, PostgreSQL hỗ trợ kiểu dữ liệu JSONB lưu trữ JSON nhị phân có thể index và truy vấn rất phù hợp để lưu knowledge log của từng sinh viên. Các trường như known\_topics, error\_patterns, hay confidence\_scores có cấu trúc thay đổi theo từng người dùng và theo thời gian; nếu chuẩn hóa hoàn toàn thành bảng quan hệ sẽ phức tạp không cần thiết, trong khi JSONB cho phép lưu linh hoạt và vẫn truy vấn được bằng SQL thông thường.
+PostgreSQL là hệ quản trị cơ sở dữ liệu quan hệ mã nguồn mở với lịch sử phát triển hơn ba mươi năm, nổi tiếng với sự tuân thủ nghiêm ngặt chuẩn SQL và khả năng mở rộng linh hoạt \cite{postgres2024docs}. Trong PPAT, PostgreSQL được chọn vì hai lý do kỹ thuật chính. Thứ nhất, đây là yêu cầu công nghệ của đồ án. Thứ hai, PostgreSQL hỗ trợ kiểu dữ liệu JSONB lưu trữ JSON nhị phân có thể index và truy vấn rất phù hợp để lưu knowledge log của từng sinh viên. Các trường như known\_topics, error\_patterns, hay confidence\_scores có cấu trúc thay đổi theo từng người dùng và theo thời gian; nếu chuẩn hóa hoàn toàn thành bảng quan hệ sẽ phức tạp không cần thiết, trong khi JSONB cho phép lưu linh hoạt và vẫn truy vấn được bằng SQL thông thường.
 
 Tính nhất quán ACID của PostgreSQL đảm bảo rằng khi một sinh viên nộp bài tập và hệ thống cùng lúc cập nhật user\_progress lẫn user\_analytics, hai thao tác này luôn thành công hoặc cùng thất bại không có trạng thái nửa vời khiến dữ liệu học tập bị sai lệch.
 
 \subsection{Redis 7}
 
-Redis là cơ sở dữ liệu in-memory chạy trên server, hỗ trợ đa dạng cấu trúc dữ liệu, hoạt động chủ yếu trong RAM nên tốc độ đọc/ghi nhanh hơn vài bậc so với cơ sở dữ liệu truyền thống. Trong PPAT, Redis đảm nhận ba vai trò riêng biệt.
+Redis là cơ sở dữ liệu in-memory chạy trên server, hỗ trợ đa dạng cấu trúc dữ liệu, hoạt động chủ yếu trong RAM nên tốc độ đọc/ghi nhanh hơn vài bậc so với cơ sở dữ liệu truyền thống \cite{redis2024docs}. Trong PPAT, Redis đảm nhận ba vai trò riêng biệt.
 
 Vai trò thứ nhất là quản lý session và refresh token: sau khi người dùng đăng nhập, refresh token được lưu vào Redis với TTL bảy ngày thay vì lưu vào PostgreSQL, giúp quá trình kiểm tra và vô hiệu hóa token diễn ra cực nhanh mà không tạo thêm tải cho database chính.
 
@@ -176,7 +176,7 @@ Ranh giới rõ ràng giữa các tầng tạo ra lợi thế bảo trì thực 
 
 \subsection{Docker \& Docker Compose}
 
-Docker là nền tảng container hóa cho phép đóng gói ứng dụng cùng toàn bộ dependencies vào một đơn vị có thể chạy nhất quán trên bất kỳ môi trường nào từ máy phát triển của lập trình viên đến server production mà không gặp vấn đề "chạy được trên máy tôi". Mỗi container chia sẻ kernel của hệ điều hành host nhưng được cô lập về filesystem, process và network, nhẹ hơn đáng kể so với máy ảo truyền thống.
+Docker là nền tảng container hóa cho phép đóng gói ứng dụng cùng toàn bộ dependencies vào một đơn vị có thể chạy nhất quán trên bất kỳ môi trường nào từ máy phát triển của lập trình viên đến server production mà không gặp vấn đề "chạy được trên máy tôi" \cite{docker2024docs}. Mỗi container chia sẻ kernel của hệ điều hành host nhưng được cô lập về filesystem, process và network, nhẹ hơn đáng kể so với máy ảo truyền thống.
 
 Docker Compose là công cụ định nghĩa và quản lý nhiều container cùng lúc thông qua một file cấu hình YAML duy nhất. Trong PPAT, Docker Compose khởi động bốn service song song: api chứa Fastify backend, web chứa React frontend được serve qua Nginx, db chứa PostgreSQL với volume persistent để dữ liệu không mất khi restart, và cache chứa Redis. Tất cả kết nối với nhau qua internal Docker network ppat-network các service giao tiếp bằng tên service thay vì IP cứng, và không service nào tiếp xúc trực tiếp với internet ngoại trừ web qua port 80. Ngoài bốn container cố định này, backend còn tạo thêm container tạm thời khi cần thực thi code của sinh viên qua Dockerode các container này được huỷ ngay sau khi thực thi xong và không được khai báo trong Compose file.
 
