@@ -35,7 +35,7 @@ Tùy vào loại tương tác của sinh viên, hệ thống xử lý theo các 
 
 {
 \renewcommand{\arraystretch}{1.5}
-\begin{tabularx}{\textwidth}{|p{3.5cm}|X|}
+\begin{tabularx}{\textwidth}{|p{3.5cm}|>{\raggedright\arraybackslash}X|}
 \caption{Ví dụ luồng xử lý theo loại request}
 \label{tab:vi-du-luong-xu-ly-theo-loai-request}
 \\
@@ -64,7 +64,7 @@ Hệ thống cung cấp 14 endpoint REST API, được nhóm theo chức năng. 
 
 {
 \renewcommand{\arraystretch}{1.5}
-\begin{tabularx}{\textwidth}{|p{2.0cm}|X|p{2.0cm}|X|}
+\begin{tabularx}{\textwidth}{|p{2.0cm}|X|p{2.0cm}|>{\raggedright\arraybackslash}X|}
 \caption{Danh sách endpoint REST API}
 \label{tab:danh-sach-endpoint-rest-api}
 \\
@@ -277,7 +277,7 @@ Một điểm cần lưu ý là SSE là giao thức một chiều từ server v�
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1.0\textwidth]{so_do_hoat_dong_chuc_nang_xem_danh_sach_bai_hoc.png}
+\includegraphics[height=0.75\textwidth, width=1.0\textwidth]{so_do_hoat_dong_chuc_nang_xem_danh_sach_bai_hoc.png}
 \caption{Sơ đồ hoạt động chức năng xem Danh sách bài học}
 \label{fig:so-do-hoat-dong-chuc-nang-xem-danh-sach-bai-hoc}
 \end{figure}
@@ -396,10 +396,10 @@ Bảng UserProgress theo dõi trạng thái hoàn thành của từng sinh viên
 
 Bảng UserAnalytics là bảng quan trọng nhất đối với tính năng cá nhân hóa. Hai trường JSONB knownTopics và errorPatterns lưu trữ dạng key-value linh hoạt ví dụ errorPatterns có thể chứa {"missing\_base\_case": 3, "off\_by\_one": 2} để AI biết sinh viên hay mắc lỗi gì và mức độ thường xuyên. Trường levelEstimate là trình độ ước tính theo thời gian thực, có thể khác với level chính thức trong bảng users và được dùng để điều chỉnh độ khó phản hồi của AI.
 
-
+\pagebreak
 {
 \renewcommand{\arraystretch}{1.5}
-\begin{tabularx}{\textwidth}{|p{4cm}|X|p{4cm}|}
+\begin{tabularx}{\textwidth}{|p{4cm}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}p{4cm}|}
 \caption{Các bảng thực thể trong hệ thống}
 \label{tab:cac-bang-thuc-the-trong-he-thong}
 \\
